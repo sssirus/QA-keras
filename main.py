@@ -39,7 +39,7 @@ ques_embedding_layer = Embedding(len(wd_idx) + 1,
 
 question_input = Input(shape=(ques_maxlen,), dtype='int32')
 embedded_question = ques_embedding_layer(question_input)
-embedded_question = Dropout(0.2)(embedded_question)
+embedded_question = Dropout(0.35)(embedded_question)
 ##relation
 rela_embedding_layer = Embedding(len(wd_idx) + 1,
                             EMBEDDING_DIM,
@@ -49,17 +49,16 @@ rela_embedding_layer = Embedding(len(wd_idx) + 1,
 
 rela_input = Input(shape=(relation_maxlen,), dtype='int32')
 embedded_relation = rela_embedding_layer(rela_input)
-embedded_relation = Dropout(0.2)(embedded_relation)
+embedded_relation = Dropout(0.35)(embedded_relation)
 
 #Bi-LSTM 层，对问题+关系进行表示（输出是三维）
 
 
 embedded_relation = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(embedded_relation)
-embedded_relation = Dropout(0.1)(embedded_relation)
+embedded_relation = Dropout(0.35)(embedded_relation)
 
 embedded_question = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(embedded_question)
-embedded_question = Dropout(0.1)(embedded_question)
-
+embedded_question = Dropout(0.35)(embedded_question)
 #Attention层
 l_att = AttentionLayer()(embedded_relation,embedded_question)
 #Attention层的拼接
@@ -78,10 +77,31 @@ for fsz in filter_sizes:
 merge = concatenate(convs,axis=1)
 out = Dropout(0.35)(merge)
 #输出层
-output = Dense(1,activation='relu')(out)
 
-model = Model(inputs=[question_input,rela_input], outputs=output)
-model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])
+dense_1 = Dense(NUM_FILTERS, activation='relu')(out)
+dense_2 = Dense(NUM_FILTERS, activation='relu')(dense_1)
+dense_3 = Dense(NUM_FILTERS, activation='relu')(dense_2)
+
+predictions = Dense(1, activation='sigmoid')(dense_3)
+# predictions = Dense(len(labels_index), activation='softmax')(merged_vector)
+
+model = Model(input=[question_input, rela_input], output=predictions)
+model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'])
+
+# 下面是训练程序
+model.fit([ques_train,rela_train], labels_train, nb_epoch=5)
+json_string = model.to_json()  # json_string = model.get_config()
+open('my_model_architecture.json','w').write(json_string)
+model.save_weights('my_model_weights.h5')
+# 下面是训练得到的神经网络进行评估
+score = model.evaluate([ques_train,rela_train], labels_train, verbose=0)
+print('train score:', score[0]) # 训练集中的loss
+print('train accuracy:', score[1]) # 训练集中的准确率
+score = model.evaluate([ques_test, rela_test], labels_val, verbose=0)
+print('Test score:', score[0])#测试集中的loss
+print('Test accuracy:', score[1]) #测试集中的准确率
 
 
 
