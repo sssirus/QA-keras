@@ -71,6 +71,7 @@ def generateWord2VectorMatrix(path,filename,wd_idx):
     return embedding_matrix
 
 def preprocess(train_files,test_files):
+
     # 准备数据
     train = get_lines(train_files)
     test = get_lines(test_files)

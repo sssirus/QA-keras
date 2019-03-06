@@ -79,10 +79,7 @@ out = Dropout(0.35)(merge)
 #输出层
 
 dense_1 = Dense(NUM_FILTERS, activation='relu')(out)
-dense_2 = Dense(NUM_FILTERS, activation='relu')(dense_1)
-dense_3 = Dense(NUM_FILTERS, activation='relu')(dense_2)
-
-predictions = Dense(1, activation='sigmoid')(dense_3)
+predictions = Dense(1, activation='sigmoid')(dense_1)
 # predictions = Dense(len(labels_index), activation='softmax')(merged_vector)
 
 model = Model(input=[question_input, rela_input], output=predictions)
