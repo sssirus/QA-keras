@@ -6,27 +6,33 @@ from data_preprocessor import preprocess,generateWord2VectorMatrix
 from attention import AttentionLayer
 
 #全局变量
-train_files="train.txt"
-test_files="test.txt"
+train_rela_files="train_case_rela.txt"
+train_ques_file="train_case_ques.txt"
+train_label_file="train_case_label.txt"
+test_rela_files="test_case_rela.txt"
+test_ques_file="test_case_ques.txt"
+test_label_file="test_case_label.txt"
 preprocessWordVector_files="word2vector.txt"
-preprocessWordVector_path=""
 MAX_NB_WORDS=10000
 EMBEDDING_DIM=100
 LSTM_DIM=150
 
 gl._init()
 
-gl.set_value('train_files', train_files)
-gl.set_value('test_files', test_files)
+gl.set_value('train_rela_files', train_rela_files)
+gl.set_value('train_ques_file', train_ques_file)
+gl.set_value('train_label_file', train_label_file)
+gl.set_value('test_rela_files', test_rela_files)
+gl.set_value('test_ques_file', test_ques_file)
+gl.set_value('test_label_file', test_label_file)
 gl.set_value('preprocessWordVector_files', preprocessWordVector_files)
-gl.set_value('preprocessWordVector_path', preprocessWordVector_path)
 gl.set_value('MAX_NB_WORDS', MAX_NB_WORDS)
 gl.set_value('EMBEDDING_DIM', EMBEDDING_DIM)
 gl.set_value('LSTM_DIM', LSTM_DIM)
 
 #预处理
-ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess(train_files,test_files)
-embedding_matrix=generateWord2VectorMatrix(preprocessWordVector_path,preprocessWordVector_files,wd_idx)
+ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file)
+embedding_matrix=generateWord2VectorMatrix(preprocessWordVector_files,wd_idx)
 # Embedding+dropout层(输出是三维)
 relation_maxlen= gl.get_value('relation_maxlen')
 ques_maxlen= gl.get_value('ques_maxlen')
