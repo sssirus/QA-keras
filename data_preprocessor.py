@@ -11,7 +11,7 @@ def tokenize(data):
    # \s 匹配任何空白字符，包括空格、制表符、换页符等等。等价于 [ \f\n\r\t\v]。
    return [x.strip() for x in re.split(r'[;,\s]\s*', data) if x.strip()]
 
-# 用——将问题和谓词切开
+# 读取文件
 
 def parse_lines(rela_files,ques_file,label_file):
     ques = []
@@ -37,7 +37,7 @@ def parse_lines(rela_files,ques_file,label_file):
 # 否则序列长度太长，训练时内存不够。
 def get_lines(rela_files,ques_file,label_file, max_length = None):
     data = parse_lines(rela_files,ques_file,label_file)
-    data = [(ques, rela) for (ques, rela) in data if not max_length ]
+    data = [(ques, rela,label) for (ques, rela,label) in data if not max_length ]
     return data
 
 #数据长度归一化。找出问题文本的最大单词长度，对所有的问题进行padding，将长度归一化。关系集同此。
