@@ -13,6 +13,7 @@ test_rela_files="test_case_rela.txt"
 test_ques_file="test_case_ques.txt"
 test_label_file="test_case_label.txt"
 preprocessWordVector_files="word2vector.txt"
+preprocessWordVector_path="/data/zjy/"
 MAX_NB_WORDS=10000
 EMBEDDING_DIM=100
 LSTM_DIM=150
@@ -26,13 +27,14 @@ gl.set_value('test_rela_files', test_rela_files)
 gl.set_value('test_ques_file', test_ques_file)
 gl.set_value('test_label_file', test_label_file)
 gl.set_value('preprocessWordVector_files', preprocessWordVector_files)
+gl.set_value('preprocessWordVector_path', preprocessWordVector_path)
 gl.set_value('MAX_NB_WORDS', MAX_NB_WORDS)
 gl.set_value('EMBEDDING_DIM', EMBEDDING_DIM)
 gl.set_value('LSTM_DIM', LSTM_DIM)
 
 #预处理
 ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file)
-embedding_matrix=generateWord2VectorMatrix(preprocessWordVector_files,wd_idx)
+embedding_matrix=generateWord2VectorMatrix(preprocessWordVector_path,preprocessWordVector_files,wd_idx)
 # Embedding+dropout层(输出是三维)
 relation_maxlen= gl.get_value('relation_maxlen')
 ques_maxlen= gl.get_value('ques_maxlen')

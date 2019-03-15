@@ -57,9 +57,9 @@ def vectorize_dialog(data,wd_idx, relation_maxlen, ques_maxlen):
 
 #从Tecent AI Lab文件中解析出每个词和它所对应的词向量，并用字典的方式存储。
 # 然后根据得到的字典生成上文所定义的词向量矩阵
-def generateWord2VectorMatrix(filename,wd_idx):
+def generateWord2VectorMatrix(path,filename,wd_idx):
     embeddings_index = {}
-    f = open(filename)
+    f = open(os.path.join(path, filename))
     for line in f:
         values = line.split()
         word = values[0]
