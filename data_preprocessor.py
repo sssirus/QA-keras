@@ -4,6 +4,7 @@ import re
 import numpy as np
 import globalvar as gl
 from keras.preprocessing.sequence import pad_sequences
+from itertools import islice
 MAX_NB_WORDS = gl.get_value('MAX_NB_WORDS')
 EMBEDDING_DIM = gl.get_value('EMBEDDING_DIM')
 #将每个单词按空格分割来
@@ -60,7 +61,7 @@ def vectorize_dialog(data,wd_idx, relation_maxlen, ques_maxlen):
 def generateWord2VectorMatrix(path,filename,wd_idx):
     embeddings_index = {}
     f = open(os.path.join(path, filename))
-    for line in f:
+    for line in islice(f, 1, None): #跳过第一行
         values = line.split()
         word = values[0]
         coefs = np.asarray(values[1:], dtype='float32')
