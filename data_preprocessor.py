@@ -13,21 +13,30 @@ def tokenize(data):
 
 # 用——将问题和谓词切开
 
-def parse_lines(lines):
+def parse_lines(rela_files,ques_file,label_file):
     ques = []
     rela = []
-    for line in lines:
-        line = line.strip()
-        relationship, question = line.split('——',1)
-        ques.append(tokenize(question))
-        rela.append(tokenize(relationship))
-    return ques, rela
+    label = []
+    with open(rela_files) as f:
+        for line in f:
+            line = line.strip()
+            ques.append(tokenize(line))
+    with open(ques_file) as f:
+        for line in f:
+            line = line.strip()
+            rela.append(tokenize(line))
+    with open(label_file) as f:
+        for line in f:
+            line = line.strip()
+            label.append(tokenize(line))
+
+    return ques, rela, label
 
 #将（问题，答案）组成相对应的tuple存储。
 #这里的maxlen是控制文本最大长度的，可以利用分位数找出覆盖90%数据的长度，令其为maxlen。
 # 否则序列长度太长，训练时内存不够。
-def get_lines(files, max_length = None):
-    data = parse_lines(files.readlines())
+def get_lines(rela_files,ques_file,label_file, max_length = None):
+    data = parse_lines(rela_files,ques_file,label_file)
     data = [(ques, rela) for (ques, rela) in data if not max_length ]
     return data
 
@@ -36,7 +45,7 @@ def vectorize_dialog(data,wd_idx, relation_maxlen, ques_maxlen):
 #向量化,返回对应词表的索引号
     ques_vec = []
     rela_vec = []
-    for ques, rela in data:
+    for ques, rela,label in data:
         rela_idx = [wd_idx[w] for w in rela]
         ques_idx = [wd_idx[w] for w in ques]
         ques_vec.append(ques_idx)
@@ -52,7 +61,6 @@ def generateWord2VectorMatrix(path,filename,wd_idx):
     embeddings_index = {}
     f = open(os.path.join(path, filename))
     for line in f:
-        values = line.split()
         values = line.split()
         word = values[0]
         coefs = np.asarray(values[1:], dtype='float32')
@@ -70,20 +78,27 @@ def generateWord2VectorMatrix(path,filename,wd_idx):
 
     return embedding_matrix
 
-def preprocess(train_files,test_files):
+def preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file):
 
     # 准备数据
-    train = get_lines(train_files)
-    test = get_lines(test_files)
+    train = get_lines(train_rela_files,train_ques_file,train_label_file)
+    test = get_lines(test_rela_files,test_ques_file,test_label_file)
+    label_train = []
+    label_test = []
+    for ques, rela, label in train:
+        label_train.append(label)
+    for ques, rela, label in test:
+        label_test.append(label)
+
     # 建立词表。词表就是文本中所有出现过的单词组成的词表。
     lexicon = set()
-    for ques, rela in train + test:
+    for ques, rela, label in train + test:
         lexicon |= set(ques + rela)
     lexicon = sorted(lexicon)
     # word2vec，并求出对话集和问题集的最大长度，padding时用。
     wd_idx = dict((wd, idx+1) for idx, wd in enumerate(lexicon))
-    relation_maxlen = max(map(len, (x for x, _, _ in train + test)))
-    ques_maxlen = max(map(len, (x for _, x, _ in train + test)))
+    ques_maxlen = max(map(len, (x for x, _, _ in train + test)))
+    relation_maxlen = max(map(len, (x for _, x, _ in train + test)))
 
     gl.set_value('relation_maxlen',relation_maxlen)
     gl.set_value('ques_maxlen', ques_maxlen)
@@ -92,4 +107,4 @@ def preprocess(train_files,test_files):
     # 对训练集和测试集，进行word2vec
     ques_train, rela_train = vectorize_dialog(train, wd_idx, relation_maxlen, ques_maxlen)
     ques_test, rela_test = vectorize_dialog(test, wd_idx, relation_maxlen, ques_maxlen)
-    return ques_train, rela_train, ques_test, rela_test, wd_idx
+    return ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx

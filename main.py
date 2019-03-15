@@ -25,7 +25,7 @@ gl.set_value('EMBEDDING_DIM', EMBEDDING_DIM)
 gl.set_value('LSTM_DIM', LSTM_DIM)
 
 #预处理
-ques_train, rela_train, ques_test, rela_test,wd_idx=preprocess(train_files,test_files)
+ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess(train_files,test_files)
 embedding_matrix=generateWord2VectorMatrix(preprocessWordVector_path,preprocessWordVector_files,wd_idx)
 # Embedding+dropout层(输出是三维)
 relation_maxlen= gl.get_value('relation_maxlen')
@@ -88,15 +88,15 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 # 下面是训练程序
-model.fit([ques_train,rela_train], labels_train, nb_epoch=5)
+model.fit([ques_train,rela_train], label_train, nb_epoch=5)
 json_string = model.to_json()  # json_string = model.get_config()
 open('my_model_architecture.json','w').write(json_string)
 model.save_weights('my_model_weights.h5')
 # 下面是训练得到的神经网络进行评估
-score = model.evaluate([ques_train,rela_train], labels_train, verbose=0)
+score = model.evaluate([ques_train,rela_train], label_train, verbose=0)
 print('train score:', score[0]) # 训练集中的loss
 print('train accuracy:', score[1]) # 训练集中的准确率
-score = model.evaluate([ques_test, rela_test], labels_val, verbose=0)
+score = model.evaluate([ques_test, rela_test], label_test, verbose=0)
 print('Test score:', score[0])#测试集中的loss
 print('Test accuracy:', score[1]) #测试集中的准确率
 
