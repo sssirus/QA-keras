@@ -1,43 +1,60 @@
 # coding=utf-8
 from keras import Input, Model
+import numpy as np
 import globalvar as gl
 from keras.layers import Embedding, Dropout, LSTM, Bidirectional, concatenate, Conv1D, MaxPooling1D, Flatten, Dense
 from data_preprocessor import preprocess,generateWord2VectorMatrix
 from attention import AttentionLayer
-
+from keras import backend as K
 #全局变量
-train_rela_files="train_case_rela.txt"
-train_ques_file="train_case_ques.txt"
-train_label_file="train_case_label.txt"
-test_rela_files="test_case_rela.txt"
-test_ques_file="test_case_ques.txt"
-test_label_file="test_case_label.txt"
-preprocessWordVector_files="TencentPreTrain.txt"
-preprocessWordVector_path="/data/zjy/"
-MAX_NB_WORDS=10000
-EMBEDDING_DIM=100
-LSTM_DIM=150
 
-gl._init()
 
-gl.set_value('train_rela_files', train_rela_files)
-gl.set_value('train_ques_file', train_ques_file)
-gl.set_value('train_label_file', train_label_file)
-gl.set_value('test_rela_files', test_rela_files)
-gl.set_value('test_ques_file', test_ques_file)
-gl.set_value('test_label_file', test_label_file)
-gl.set_value('preprocessWordVector_files', preprocessWordVector_files)
-gl.set_value('preprocessWordVector_path', preprocessWordVector_path)
-gl.set_value('MAX_NB_WORDS', MAX_NB_WORDS)
-gl.set_value('EMBEDDING_DIM', EMBEDDING_DIM)
-gl.set_value('LSTM_DIM', LSTM_DIM)
+
+gl.set_train_rela_files("train_case_rela.txt")
+gl.set_train_ques_file("train_case_ques.txt")
+gl.set_train_label_file("train_case_label.txt")
+gl.set_test_rela_files("test_case_rela.txt")
+gl.set_test_ques_file("test_case_ques.txt")
+gl.set_test_label_file("test_case_label.txt")
+gl.set_preprocessWordVector_files("TencentPreTrain.txt")
+gl.set_preprocessWordVector_path("/data/zjy/")
+gl.set_MAX_NB_WORDS(10000)
+gl.set_EMBEDDING_DIM(200)
+gl.set_LSTM_DIM(150)
+
+train_rela_files=gl.get_train_rela_files()
+train_ques_file=gl.get_train_ques_file()
+train_label_file=gl.get_train_label_file()
+test_rela_files=gl.get_test_rela_files()
+test_ques_file=gl.get_test_ques_file()
+test_label_file=gl.get_test_label_file()
+preprocessWordVector_files=gl.get_preprocessWordVector_files()
+preprocessWordVector_path=gl.get_preprocessWordVector_path()
+MAX_NB_WORDS=gl.get_MAX_NB_WORDS()
+EMBEDDING_DIM=gl.get_EMBEDDING_DIM()
+LSTM_DIM=gl.get_LSTM_DIM()
+
+
 
 #预处理
 ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file)
 embedding_matrix=generateWord2VectorMatrix(preprocessWordVector_path,preprocessWordVector_files,wd_idx)
+print("ques_train")
+print(np.array(ques_train).shape)
+print("rela_train")
+print(np.array(rela_train).shape)
+print("label_train")
+print(np.array(label_train).shape)
+print("ques_test")
+print(np.array(ques_test).shape)
+print("rela_test")
+print(np.array(rela_test).shape)
+print("label_test")
+print(np.array(label_test).shape)
 # Embedding+dropout层(输出是三维)
-relation_maxlen= gl.get_value('relation_maxlen')
-ques_maxlen= gl.get_value('ques_maxlen')
+relation_maxlen= gl.get_relation_maxlen()
+ques_maxlen= gl.get_ques_maxlen()
+
 ##question
 ques_embedding_layer = Embedding(len(wd_idx) + 1,
                             EMBEDDING_DIM,
@@ -45,20 +62,28 @@ ques_embedding_layer = Embedding(len(wd_idx) + 1,
                             input_length=ques_maxlen,
                             trainable=False)
 
-question_input = Input(shape=(ques_maxlen,), dtype='int32')
+question_input = Input(shape=(ques_maxlen,), dtype='float32')
 embedded_question = ques_embedding_layer(question_input)
-embedded_question = Dropout(0.35)(embedded_question)
+
+print ("question_input: ")
+print(K.int_shape(question_input))
+print ("embedded_question: ")
+print(K.int_shape(embedded_question))
 ##relation
+
 rela_embedding_layer = Embedding(len(wd_idx) + 1,
                             EMBEDDING_DIM,
                             weights=[embedding_matrix],
                             input_length=relation_maxlen,
-                            trainable=False)#如果这里报错参考https://www.jianshu.com/p/795a5e2cd10c
+                            trainable=False)
 
-rela_input = Input(shape=(relation_maxlen,), dtype='int32')
+rela_input = Input(shape=(relation_maxlen,), dtype='float32')
 embedded_relation = rela_embedding_layer(rela_input)
-embedded_relation = Dropout(0.35)(embedded_relation)
 
+print ("rela_input:")
+print (K.int_shape(rela_input))
+print ("embedded_relation")
+print (K.int_shape(embedded_relation))
 #Bi-LSTM 层，对问题+关系进行表示（输出是三维）
 
 
@@ -68,15 +93,20 @@ embedded_relation = Dropout(0.35)(embedded_relation)
 embedded_question = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(embedded_question)
 embedded_question = Dropout(0.35)(embedded_question)
 #Attention层
-l_att = AttentionLayer()(embedded_relation,embedded_question)
+print ("---------------")
+l_att = AttentionLayer()([embedded_relation,embedded_question])
 #Attention层的拼接
 merge_layer = concatenate([embedded_question , l_att] , axis=1)
 
 #CNN层
 convs = []
-NUM_FILTERS =150
-gl.set_value('NUM_FILTERS', NUM_FILTERS)
-filter_sizes = [1,3,5]
+
+gl.set_NUM_FILTERS(150)
+gl.set_filter_sizes([1,3,5])
+
+NUM_FILTERS=gl.get_NUM_FILTERS()
+filter_sizes=gl.get_filter_sizes()
+
 for fsz in filter_sizes:
     conv1 = Conv1D(NUM_FILTERS,kernel_size=fsz,activation='tanh')(merge_layer)
     pool1 = MaxPooling1D(ques_maxlen+relation_maxlen-fsz+1)(conv1)#max-pooling
