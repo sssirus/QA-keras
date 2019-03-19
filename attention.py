@@ -1,46 +1,37 @@
 # Attention GRU network
-from keras.engine.topology import Layer
+
+from keras.layers import Permute, Dense, multiply, Activation, Dot
+import globalvar as gl
 from keras import backend as K
-
-class AttentionLayer(Layer):
-    def __init__(self, **kwargs):
-
-        super(AttentionLayer, self).__init__(** kwargs)
-
-    def build(self, input_shape):
-        assert isinstance(input_shape, list)
-        # inputs.shape = (batch_size, time_steps, seq_len)
-        # W.shape = (time_steps, time_steps)
-        input_shapeR, input_shapeQ = input_shape
-        self.W = self.add_weight(name='att_weight',
-                                 shape=(input_shapeR[2], input_shapeQ[2]),
-                                 initializer='uniform',
-                                 trainable=True)
-
-        super(AttentionLayer, self).build(input_shape)
-
-    def call(self, input_shape):
-        assert isinstance(input_shape, list)
-
-        input_shapeR, input_shapeQ = input_shape
+def attention_3d_block(input_shapeR, input_shapeQ):
+    relation_maxlen = gl.get_relation_maxlen()
+    LSTM_DIM=gl.get_LSTM_DIM()
+    # inputs.shape = (batch_size, time_steps, seq_len)
+    print("input_shapeR: ")
+    print(K.int_shape(input_shapeR))
+    print("input_shapeQ: ")
+    print(K.int_shape(input_shapeQ))
 
 
-        # inputs.shape = (batch_size, time_steps, seq_len)
-        rt = K.permute_dimensions(input_shapeR, (1, 0, 2))
-        qt = K.permute_dimensions(input_shapeQ, (2, 0, 1))
-        print (K.int_shape(rt))
-        print (K.int_shape(qt))
-        # x.shape = (batch_size, seq_len, time_steps)
-        mid=K.dot(rt, self.W)
-        a = K.softmax(K.dot(mid, qt))
-        print(K.int_shape(a))
-        rtt = K.permute_dimensions(input_shapeR, (0, 2, 1))
-        print(K.int_shape(rtt))
-        outputs = K.dot(rtt, a)
-        outputs = K.permute_dimensions(outputs, (0, 2, 1))
-        return outputs
+    mid = Dense(2*LSTM_DIM)(input_shapeR)
+    print("mid: ")
+    print(K.int_shape(mid))
+    print("rq: ")
+    rq = Permute((2, 1))(input_shapeQ)
+    print(K.int_shape(rq))
+    #a = K.batch_dot(mid,rq,axes=[2,1])
+    a = Dot(axes=[2,2])([mid,input_shapeQ])
+   # a = K.batch_dot(a,mid,axes=2)
+    a = Activation('softmax')(a)
 
-    def compute_output_shape(self, input_shape):
-        assert isinstance(input_shape, list)
-        input_shapeR, input_shapeQ = input_shape
-        return [input_shapeQ[0], input_shapeQ[1],input_shapeR[2]]
+    ##rtt =Permute((2, 1))(input_shapeR)
+    # x.shape = (batch_size, seq_len, time_steps)
+    print("a: ")
+    print(K.int_shape(a))
+
+
+    outputs = Dot(axes=[1, 1])([input_shapeR, a])
+    outputs = Permute((2, 1))(outputs)
+    print("outputs: ")
+    print(K.int_shape(outputs))
+    return outputs

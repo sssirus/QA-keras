@@ -4,7 +4,7 @@ import numpy as np
 import globalvar as gl
 from keras.layers import Embedding, Dropout, LSTM, Bidirectional, concatenate, Conv1D, MaxPooling1D, Flatten, Dense
 from data_preprocessor import preprocess,generateWord2VectorMatrix
-from attention import AttentionLayer
+from attention import attention_3d_block
 from keras import backend as K
 #全局变量
 
@@ -94,7 +94,7 @@ embedded_question = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_seque
 embedded_question = Dropout(0.35)(embedded_question)
 #Attention层
 print ("---------------")
-l_att = AttentionLayer()([embedded_relation,embedded_question])
+l_att = attention_3d_block(embedded_relation,embedded_question)
 #Attention层的拼接
 merge_layer = concatenate([embedded_question , l_att] , axis=1)
 
