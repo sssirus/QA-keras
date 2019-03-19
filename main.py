@@ -84,13 +84,13 @@ print ("rela_input:")
 print (K.int_shape(rela_input))
 print ("embedded_relation")
 print (K.int_shape(embedded_relation))
-#Bi-LSTM 层，对问题+关系进行表示（输出是三维）
+#LSTM 层，对问题+关系进行表示（输出是三维）
 
 
-embedded_relation = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(embedded_relation)
+embedded_relation = LSTM(LSTM_DIM, activation='tanh', return_sequences=True)(embedded_relation)
 embedded_relation = Dropout(0.35)(embedded_relation)
 
-embedded_question = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(embedded_question)
+embedded_question = LSTM(LSTM_DIM, activation='tanh', return_sequences=True)(embedded_question)
 embedded_question = Dropout(0.35)(embedded_question)
 #Attention层
 print ("---------------")
@@ -126,7 +126,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 # 下面是训练程序
-model.fit([ques_train,rela_train], label_train, nb_epoch=5)
+model.fit([ques_train,rela_train], label_train, nb_epoch=5,batch_size=32,verbose=1)
 json_string = model.to_json()  # json_string = model.get_config()
 open('my_model_architecture.json','w').write(json_string)
 model.save_weights('my_model_weights.h5')

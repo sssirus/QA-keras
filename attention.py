@@ -13,7 +13,7 @@ def attention_3d_block(input_shapeR, input_shapeQ):
     print(K.int_shape(input_shapeQ))
 
 
-    mid = Dense(2*LSTM_DIM)(input_shapeR)
+    mid = Dense(LSTM_DIM)(input_shapeR)
     print("mid: ")
     print(K.int_shape(mid))
     print("rq: ")
