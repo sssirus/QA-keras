@@ -27,8 +27,7 @@ def parse_relation (RelaFile):
     relation = []
     with open(RelaFile) as f2:
         for rela in f2:
-            rela = rela.strip()
-            relation.append(tokenize(rela))
+            relation.append(tokenize(rela.strip()))
     return relation
 
 
@@ -54,16 +53,19 @@ def predicated(inpute_question):
     question = [tokenize(inpute_question)]
 
     relations = parse_relation(RelaFile)
-    print("question")
-    print(question)
-    print("question")
-    print(relations)
+    f = open('relation.txt', 'w')  # 若是'wb'就表示写二进制文件
+    f.write(str(relations))
+    f.close()
+    f = open('question.txt', 'w')  # 若是'wb'就表示写二进制文件
+    f.write(str(question))
+    f.close()
     #数据预处理
     # 建立词表。词表就是文本中所有出现过的单词组成的词表。
     lexicon = set()
-    for words in question + relations:
+    for words in question :
         lexicon |= set(words)
-
+    for words in relations :
+        lexicon |= set(words)
     lexicon = sorted(lexicon)
     lexicon_size = len(lexicon) + 1
     print("lexicon_size")
@@ -72,25 +74,30 @@ def predicated(inpute_question):
     #获取问题和关系最大长度
     ques_maxlen= 7
     rela_maxlen= 3
+    gl.set_ques_maxlen(ques_maxlen)
+    gl.set_relation_maxlen(rela_maxlen)
     # 对训练集和测试集，进行word2vec
     question_vec = vectorize_dialog(question, wd_idx,  ques_maxlen)
     relation_vec = vectorize_dialog(relations, wd_idx, rela_maxlen)
 
-    questions_vec=np.tile(question_vec, (NUM_OF_RELATIONS, 1))
+    questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
     print("questions_vec")
     print(np.array(questions_vec).shape)
     print("relation_vec")
     print(np.array(relation_vec).shape)
+
     # 进行embeddings
     EMBEDDING_DIM=200
+    gl.set_EMBEDDING_DIM(EMBEDDING_DIM)
     embedding_index = loadEmbeddingsIndex("/data/zjy/", "TencentPreTrain.txt")
     embedding_matrix = generateWord2VectorMatrix(embedding_index, wd_idx)
-    ques_embedding = getEmbeddings(question_vec, EMBEDDING_DIM, embedding_matrix, len(wd_idx), ques_maxlen)
+    ques_embedding = getEmbeddings(questions_vec, EMBEDDING_DIM, embedding_matrix, len(wd_idx), ques_maxlen)
     rela_embedding = getEmbeddings(relation_vec, EMBEDDING_DIM, embedding_matrix, len(wd_idx), rela_maxlen)
+
     #批量预测
-    y = model.predict([ques_embedding,rela_embedding], batch_size=10, verbose=1)
+    y = model.predict([ques_embedding,rela_embedding])
     results=decode_predictions_custom(y,CLASS_CUSTOM, top=1)
-    print('Predicted:', y)
+    print('Predicted:', results)
     #结果
     return results
 predicated("ENTITY 创始人 哪位 ")
