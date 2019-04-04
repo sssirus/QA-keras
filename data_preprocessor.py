@@ -97,7 +97,7 @@ def preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files
 
 #从Tecent AI Lab文件中解析出每个词和它所对应的词向量，并用字典的方式存储。
 # 然后根据得到的字典生成上文所定义的词向量矩阵
-def generateWord2VectorMatrix(path,filename,wd_idx):
+def loadEmbeddingsIndex(path,filename):
     embeddings_index = {}
     f = open(os.path.join(path, filename))
     for line in f:
@@ -108,6 +108,8 @@ def generateWord2VectorMatrix(path,filename,wd_idx):
     f.close()
 
     print('Found %s word vectors.' % len(embeddings_index))
+    return embeddings_index
+def generateWord2VectorMatrix(embeddings_index, wd_idx):
     EMBEDDING_DIM=gl.get_EMBEDDING_DIM()
     embedding_matrix = np.zeros((len(wd_idx) + 1, EMBEDDING_DIM))
     for word, i in wd_idx.items():

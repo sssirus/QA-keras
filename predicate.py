@@ -1,12 +1,28 @@
+#coding=utf-8
 from keras.models import load_model
-from keras_applications.imagenet_utils import decode_predictions
-
+import numpy as np
 import globalvar as gl
 from data_preprocessor import tokenize
 from keras.preprocessing.sequence import pad_sequences
 
 
+def decode_predictions_custom(preds, CLASS_CUSTOM,top=5):
+    CLASS_CUSTOM = ["0","1","2","3","4","5","6","7","8","9"]
+    results = []
+    for pred in preds:
+        top_indices = pred.argsort()[-top:][::-1]
+        result = [tuple(CLASS_CUSTOM[i]) + (pred[i]*100,) for i in top_indices]
+        results.append(result)
+    return results
 
+
+def get_class_custom (RelaFile):
+    CLASS_CUSTOM = []
+    with open(RelaFile) as f2:
+        for rela in f2:
+            rela = rela.strip()
+            CLASS_CUSTOM.append(rela)
+    return CLASS_CUSTOM
 
 def parse_relation (RelaFile):
     relation = []
@@ -30,14 +46,19 @@ def predicated(inpute_question):
 
     NUM_OF_RELATIONS=708;
     gl.set_NUM_OF_RELATIONS(NUM_OF_RELATIONS)
-    RelaFile="relation_fenci.txt"
+    RelaFile="./data/relation_fenci.txt"
+
     #加载模型
     model = load_model('my_model.h5')
     #构造数据
-
+    CLASS_CUSTOM = get_class_custom("./data/relation.txt")
     question = [tokenize(inpute_question)]
-    #questions = question * NUM_OF_RELATIONS
+
     relations = parse_relation(RelaFile)
+    print("question")
+    print(question)
+    print("question")
+    print(relations)
     #数据预处理
     # 建立词表。词表就是文本中所有出现过的单词组成的词表。
     lexicon = set()
@@ -50,16 +71,21 @@ def predicated(inpute_question):
     print(lexicon_size)
     wd_idx = dict((wd, idx + 1) for idx, wd in enumerate(lexicon))
     #获取问题和关系最大长度
-    ques_maxlen= gl.get_ques_maxlen()
-    rela_maxlen= gl.get_relation_maxlen()
+    ques_maxlen= 7
+    rela_maxlen= 3
     # 对训练集和测试集，进行word2vec
     question_vec = vectorize_dialog(question, wd_idx,  ques_maxlen)
     relation_vec = vectorize_dialog(relations, wd_idx, rela_maxlen)
-    questions_vec = question_vec * NUM_OF_RELATIONS
+
+    questions_vec=np.tile(question_vec, (NUM_OF_RELATIONS, 1))
+    print("questions_vec")
+    print(np.array(questions_vec).shape)
+    print("relation_vec")
+    print(np.array(relation_vec).shape)
     #批量预测
-    y = model.predict([questions_vec,relation_vec])
-    results=decode_predictions(y, top=1)
-    print('Predicted:', results)
+    y = model.predict([questions_vec,relation_vec], batch_size=10, verbose=1)
+    results=decode_predictions_custom(y,CLASS_CUSTOM, top=1)
+    print('Predicted:', y)
     #结果
     return results
 predicated("ENTITY 创始人 哪位 ")
