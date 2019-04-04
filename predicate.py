@@ -5,6 +5,9 @@ import globalvar as gl
 from data_preprocessor import tokenize
 from keras.preprocessing.sequence import pad_sequences
 
+
+
+
 def parse_relation (RelaFile):
     relation = []
     with open(RelaFile) as f2:
@@ -14,8 +17,6 @@ def parse_relation (RelaFile):
     return relation
 
 
-def fenci(inpute_question):
-    pass
 def vectorize_dialog(data, wd_idx, maxlen ):
 #向量化,返回对应词表的索引号
     vec = []
@@ -26,13 +27,15 @@ def vectorize_dialog(data, wd_idx, maxlen ):
     return  pad_sequences(vec, maxlen = maxlen)
 
 def predicated(inpute_question):
-    NUM_OF_RELATIONS=1000;
-    RelaFile=""
+
+    NUM_OF_RELATIONS=708;
+    gl.set_NUM_OF_RELATIONS(NUM_OF_RELATIONS)
+    RelaFile="relation_fenci.txt"
     #加载模型
     model = load_model('my_model.h5')
     #构造数据
-    inpute_questions=fenci(inpute_question)
-    question = [tokenize(inpute_questions)]
+
+    question = [tokenize(inpute_question)]
     #questions = question * NUM_OF_RELATIONS
     relations = parse_relation(RelaFile)
     #数据预处理
@@ -59,3 +62,4 @@ def predicated(inpute_question):
     print('Predicted:', results)
     #结果
     return results
+predicated("ENTITY 创始人 哪位 ")

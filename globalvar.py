@@ -15,6 +15,7 @@ class GlobalVar:
 
     ques_maxlen = None
     relation_maxlen = None
+    NUM_OF_RELATIONS=None
 
 def set_train_rela_files(train_rela_files):
   GlobalVar.train_rela_files = train_rela_files
@@ -90,3 +91,8 @@ def set_relation_maxlen(relation_maxlen):
   GlobalVar.relation_maxlen = relation_maxlen
 def get_relation_maxlen():
   return GlobalVar.relation_maxlen
+
+def set_NUM_OF_RELATIONS(NUM_OF_RELATIONS):
+  GlobalVar.NUM_OF_RELATIONS = NUM_OF_RELATIONS
+def get_NUM_OF_RELATIONS():
+  return GlobalVar.NUM_OF_RELATIONS
