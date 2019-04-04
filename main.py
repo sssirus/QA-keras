@@ -129,7 +129,7 @@ model.compile(optimizer='adam',
 model.fit([ques_train,rela_train], label_train, nb_epoch=5,batch_size=32,verbose=1)
 json_string = model.to_json()  # json_string = model.get_config()
 open('my_model_architecture.json','w').write(json_string)
-model.save_weights('my_model_weights.h5')
+model.save('my_model.h5')
 # 下面是训练得到的神经网络进行评估
 score = model.evaluate([ques_train,rela_train], label_train, verbose=0)
 print('train score:', score[0]) # 训练集中的loss
