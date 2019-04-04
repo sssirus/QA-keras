@@ -2,12 +2,11 @@
 from keras.models import load_model
 import numpy as np
 import globalvar as gl
-from data_preprocessor import tokenize
+from data_preprocessor import tokenize, loadEmbeddingsIndex, generateWord2VectorMatrix
 from keras.preprocessing.sequence import pad_sequences
-
+from embeddings import getEmbeddings
 
 def decode_predictions_custom(preds, CLASS_CUSTOM,top=5):
-    CLASS_CUSTOM = ["0","1","2","3","4","5","6","7","8","9"]
     results = []
     for pred in preds:
         top_indices = pred.argsort()[-top:][::-1]
@@ -82,8 +81,14 @@ def predicated(inpute_question):
     print(np.array(questions_vec).shape)
     print("relation_vec")
     print(np.array(relation_vec).shape)
+    # 进行embeddings
+    EMBEDDING_DIM=200
+    embedding_index = loadEmbeddingsIndex("/data/zjy/", "TencentPreTrain.txt")
+    embedding_matrix = generateWord2VectorMatrix(embedding_index, wd_idx)
+    ques_embedding = getEmbeddings(question_vec, EMBEDDING_DIM, embedding_matrix, len(wd_idx), ques_maxlen)
+    rela_embedding = getEmbeddings(relation_vec, EMBEDDING_DIM, embedding_matrix, len(wd_idx), rela_maxlen)
     #批量预测
-    y = model.predict([questions_vec,relation_vec], batch_size=10, verbose=1)
+    y = model.predict([ques_embedding,rela_embedding], batch_size=10, verbose=1)
     results=decode_predictions_custom(y,CLASS_CUSTOM, top=1)
     print('Predicted:', y)
     #结果
