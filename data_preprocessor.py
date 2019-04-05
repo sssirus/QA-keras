@@ -14,7 +14,7 @@ MAX_NB_WORDS = gl.get_MAX_NB_WORDS()
 def tokenize(data):
     import re
     #  \s 匹配任何空白字符，包括空格、制表符、换页符等等。等价于 [ \f\n\r\t\v]。
-    return [x.strip() for x in re.split(r'[;,\s]\s*', data) if x.strip()]
+    return [x.strip() for x in re.split(r'[\s]', data) if x.strip()]
 
 # parse_dialog 将所有的对话进行解析，返回tokenize后的句子
 # 如果 only_supporting为真表明只返回含有答案的对话
@@ -107,7 +107,7 @@ def loadEmbeddingsIndex(path,filename):
         embeddings_index[word] = coefs
     f.close()
 
-    print('Found %s word vectors.' % len(embeddings_index))
+    print('找到 %s 个词向量。' % len(embeddings_index))
     return embeddings_index
 def generateWord2VectorMatrix(embeddings_index, wd_idx):
     EMBEDDING_DIM=gl.get_EMBEDDING_DIM()

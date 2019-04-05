@@ -3,9 +3,9 @@ from keras import Sequential
 from keras.layers import Embedding, Permute
 
 
-def getEmbeddings(input,EMBEDDING_DIM,embedding_matrix,length_of_wd_idx,maxlen):
+def getEmbeddings(input,EMBEDDING_DIM,embedding_matrix,length,maxlen):
     embedding_model = Sequential()
-    embedding_model.add(Embedding(length_of_wd_idx + 1,
+    embedding_model.add(Embedding(length + 1,
                                        EMBEDDING_DIM,
                                        weights=[embedding_matrix],
                                        input_length=maxlen,
