@@ -1,6 +1,6 @@
 # Attention GRU network
 
-from keras.layers import Permute, Dense, multiply, Activation, Dot
+from keras.layers import Permute, Dense, multiply, Activation, Dot, regularizers
 import globalvar as gl
 from keras import backend as K
 def attention_3d_block(input_shapeR, input_shapeQ):
@@ -13,7 +13,7 @@ def attention_3d_block(input_shapeR, input_shapeQ):
     print(K.int_shape(input_shapeQ))
 
 
-    mid = Dense(LSTM_DIM,name="att_dense")(input_shapeR)
+    mid = Dense(2*LSTM_DIM,name="att_dense",kernel_regularizer=regularizers.l2(0.01))(input_shapeR)
     print("mid: ")
     print(K.int_shape(mid))
     print("rq: ")

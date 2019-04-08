@@ -1,7 +1,8 @@
 # coding=utf-8
 from keras import Input, Model
 
-from keras.layers import Embedding, Dropout, LSTM, Bidirectional, concatenate, Conv1D, MaxPooling1D, Flatten, Dense
+from keras.layers import Embedding, Dropout, LSTM, Bidirectional, concatenate, Conv1D, MaxPooling1D, Flatten, Dense, \
+    regularizers
 
 from attention import attention_3d_block
 from keras import backend as K
@@ -41,11 +42,11 @@ def creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen
     #LSTM 层，对问题+关系进行表示（输出是三维）
 
 
-    embedded_relation = LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_relation")(embedded_relation)
-    embedded_relation = Dropout(0.35)(embedded_relation)
+    embedded_relation = LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_relation",kernel_regularizer=regularizers.l2(0.01))(embedded_relation)
+    #embedded_relation = Dropout(0.35)(embedded_relation)
 
-    embedded_question = LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_question")(embedded_question)
-    embedded_question = Dropout(0.35)(embedded_question)
+    embedded_question = LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_question",kernel_regularizer=regularizers.l2(0.01))(embedded_question)
+    #embedded_question = Dropout(0.35)(embedded_question)
     #Attention层
     print ("---------------")
     l_att = attention_3d_block(embedded_relation,embedded_question)
@@ -57,27 +58,27 @@ def creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen
 
     #for fsz in filter_sizes:
     ## 1
-    conv1 = Conv1D(NUM_FILTERS,kernel_size=1,activation='tanh',name="cnn_1_conv")(merge_layer)
+    conv1 = Conv1D(NUM_FILTERS,kernel_size=1,activation='tanh',name="cnn_1_conv",kernel_regularizer=regularizers.l2(0.01))(merge_layer)
     pool1 = MaxPooling1D(ques_maxlen+relation_maxlen-1+1,name="cnn_1_maxpool")(conv1)#max-pooling
     pool1 = Flatten()(pool1)
     convs.append(pool1)
     ## 3
-    conv2 = Conv1D(NUM_FILTERS,kernel_size=3,activation='tanh',name="cnn_2_conv")(merge_layer)
+    conv2 = Conv1D(NUM_FILTERS,kernel_size=3,activation='tanh',name="cnn_2_conv",kernel_regularizer=regularizers.l2(0.01))(merge_layer)
     pool2 = MaxPooling1D(ques_maxlen+relation_maxlen-3+1,name="cnn_2_maxpool")(conv2)#max-pooling
     pool2 = Flatten()(pool2)
     convs.append(pool2)
     ## 5
-    conv3 = Conv1D(NUM_FILTERS,kernel_size=5,activation='tanh',name="cnn_3_conv")(merge_layer)
+    conv3 = Conv1D(NUM_FILTERS,kernel_size=5,activation='tanh',name="cnn_3_conv",kernel_regularizer=regularizers.l2(0.01))(merge_layer)
     pool3 = MaxPooling1D(ques_maxlen+relation_maxlen-5+1,name="cnn_3_maxpool")(conv3)#max-pooling
     pool3 = Flatten()(pool3)
     convs.append(pool3)
 
     merge = concatenate(convs,axis=1)
-    out = Dropout(0.35)(merge)
+    #out = Dropout(0.35)(merge)
     #输出层
 
-    dense_1 = Dense(NUM_FILTERS, activation='relu',name="output_dense_1")(out)
-    predictions = Dense(1, activation='sigmoid',name="output")(dense_1)
+    #dense_1 = Dense(NUM_FILTERS, name="output_dense_1",kernel_regularizer=regularizers.l2(0.01))(merge)
+    predictions = Dense(1, activation='sigmoid',name="output")(merge)
     # predictions = Dense(len(labels_index), activation='softmax')(merged_vector)
     model = Model(input=[question_input, rela_input], output=predictions)
     return model

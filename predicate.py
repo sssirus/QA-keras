@@ -8,7 +8,7 @@ import globalvar as gl
 from data_preprocessor import tokenize, loadEmbeddingsIndex, generateWord2VectorMatrix
 from keras.preprocessing.sequence import pad_sequences
 from loadModel import creatModel, creat_model_for_predicate
-from visualization import print_keras_wegiths
+
 
 
 def decode_predictions2(preds, top):
@@ -134,4 +134,4 @@ def predicated(inpute_question):
 # 加载模型参数
 #model.load_weights('my_model_weight.h5')
 
-predicated("ENTITY 创始人 哪位 ")
+#predicated("ENTITY 创始人 哪位 ")
