@@ -109,7 +109,7 @@ def predicated(inpute_question):
     NUM_FILTERS=150
     LSTM_DIM =150
     gl.set_LSTM_DIM(LSTM_DIM)
-    model=creat_model_for_predicate(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,rela_maxlen,NUM_FILTERS,LSTM_DIM)
+    model=creat_model_for_predicate(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,rela_maxlen,NUM_FILTERS,LSTM_DIM,0.01)
 
     model.load_weights(filepath='my_model_weights.h5', by_name=True)
     #predicate_rela_embedding_layer=model.get_layer(name="predicate_rela_embedding_layer")

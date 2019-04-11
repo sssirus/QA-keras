@@ -16,7 +16,7 @@ gl.set_test_ques_file("test_case_ques.txt")
 gl.set_test_label_file("test_case_label.txt")
 gl.set_preprocessWordVector_files("TencentPreTrain.txt")
 gl.set_preprocessWordVector_path("/data/zjy/")
-gl.set_MAX_NB_WORDS(30)
+gl.set_MAX_NB_WORDS(50)
 gl.set_EMBEDDING_DIM(200)
 gl.set_LSTM_DIM(150)
 
@@ -32,7 +32,7 @@ MAX_NB_WORDS=gl.get_MAX_NB_WORDS()
 EMBEDDING_DIM=gl.get_EMBEDDING_DIM()
 LSTM_DIM=gl.get_LSTM_DIM()
 
-gl.set_NUM_FILTERS(150)
+gl.set_NUM_FILTERS(128)
 gl.set_filter_sizes([1,3,5])
 
 NUM_FILTERS = gl.get_NUM_FILTERS()
@@ -59,32 +59,25 @@ print(np.array(label_test).shape)
 relation_maxlen= gl.get_relation_maxlen()
 ques_maxlen= gl.get_ques_maxlen()
 
-model=creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM)
-model.compile(optimizer='sgd',
+model=creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM,0.01)
+model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-# 下面是训练程序
-model.fit(x=[ques_train,rela_train], y=label_train, nb_epoch=10,batch_size=20,verbose=1,shuffle=True)
+model.fit([rela_train,ques_train], label_train, nb_epoch=10,batch_size=20,verbose=1,shuffle=True)
 json_string = model.to_json()  # json_string = model.get_config()
 open('my_model_architecture.json','w').write(json_string)
 model.save_weights('my_model_weights.h5')
-# 下面是训练得到的神经网络进行评估
-score = model.evaluate(x=[ques_train,rela_train], y=label_train, verbose=0)
-print('train score:', score[0]) # 训练集中的loss
-print('train accuracy:', score[1]) # 训练集中的准确率
-score = model.evaluate(x=[ques_test, rela_test], y=label_test, verbose=0)
-print('Test score:', score[0])#测试集中的loss
-print('Test accuracy:', score[1]) #测试集中的准确率
 
-y = model.predict([ques_test, rela_test])
+score = model.evaluate([rela_train,ques_train], label_train, verbose=0)
+print('train score:', score[0])
+print('train accuracy:', score[1])
+score = model.evaluate([rela_test, ques_test], label_test, verbose=0)
+print('Test score:', score[0])
+print('Test accuracy:', score[1])
+#a = model.predict([rela_test,ques_test])
 
-print('Predicted:')
-for lines in y:
-    for line in lines:
-        print(line)
-
-print("查看模型")
-for layer in model.layers:
-    for weight in layer.weights:
-        print(weight.name, weight.shape)
+#print('Predicted:')
+#for lines in a:
+#    for line in lines:
+#        print(line)
