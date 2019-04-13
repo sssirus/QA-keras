@@ -60,7 +60,7 @@ relation_maxlen= gl.get_relation_maxlen()
 ques_maxlen= gl.get_ques_maxlen()
 
 model=creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM,0.01)
-model.compile(optimizer='rmsprop',
+model.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
@@ -75,9 +75,9 @@ print('train accuracy:', score[1])
 score = model.evaluate([rela_test, ques_test], label_test, verbose=0)
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
-#a = model.predict([rela_test,ques_test])
+a = model.predict([rela_test,ques_test])
 
-#print('Predicted:')
-#for lines in a:
-#    for line in lines:
-#        print(line)
+print('Predicted:')
+for lines in a:
+    for line in lines:
+        print(line)

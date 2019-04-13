@@ -11,19 +11,20 @@ from loadModel import creatModel, creat_model_for_predicate
 
 
 
-def decode_predictions2(preds, top):
+def decode_predictions2(preds, top=1):
     CLASS_INDEX = []
     with open('./data/relation.txt')as f2:
         for rela in f2:
             rela = rela.strip()
             CLASS_INDEX.append(rela)
-    results = []
-    for pred in preds:
-        top_indices = pred.argsort()[-top:][::-1]
-        result = [tuple(CLASS_INDEX[i]) + (pred[i],) for i in top_indices]
-        result.sort(key=lambda x: x[2], reverse=True)
-        results.append(result)
-    return results
+
+
+        top_indices = preds.argmax()
+        tag=CLASS_INDEX[top_indices]
+        num=preds[top_indices]
+        return tag,num
+
+
 
 
 
@@ -49,7 +50,7 @@ def predicated(inpute_question):
 
     NUM_OF_RELATIONS=708;
     gl.set_NUM_OF_RELATIONS(NUM_OF_RELATIONS)
-    RelaFile="./data/test.txt"
+    RelaFile="./data/relation_fenci.txt"
 
 
     #构造数据
@@ -92,9 +93,9 @@ def predicated(inpute_question):
     print(str(question_vec).decode('string_escape'))
     print("relation_vec:")
     print(str(relation_vec).decode('string_escape'))
-    #questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
+    questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
     print("questions_vec")
-    print(np.array(question_vec).shape)
+    print(np.array(questions_vec).shape)
     print("relation_vec")
     print(np.array(relation_vec).shape)
 
@@ -103,35 +104,36 @@ def predicated(inpute_question):
     gl.set_EMBEDDING_DIM(EMBEDDING_DIM)
     embedding_index = loadEmbeddingsIndex("/data/zjy/", "TencentPreTrain.txt")
     embedding_matrix = generateWord2VectorMatrix(embedding_index, wd_idx)
-    #改变矩阵形状
-    #embedding_matrix_re = np.resize(embedding_matrix,(1611, 200))
+
     # 加载模型
-    NUM_FILTERS=150
+    NUM_FILTERS=128
     LSTM_DIM =150
     gl.set_LSTM_DIM(LSTM_DIM)
     model=creat_model_for_predicate(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,rela_maxlen,NUM_FILTERS,LSTM_DIM,0.01)
 
     model.load_weights(filepath='my_model_weights.h5', by_name=True)
-    #predicate_rela_embedding_layer=model.get_layer(name="predicate_rela_embedding_layer")
-    #predicate_rela_embedding_layer.set_weights([embedding_matrix])
-    #predicate_ques_embedding_layer = model.get_layer(name="predicate_ques_embedding_layer")
-    #predicate_ques_embedding_layer.set_weights([embedding_matrix])
+
+
     print("查看模型")
     for layer in model.layers:
         for weight in layer.weights:
             print (weight.name,weight.shape)
 
     #批量预测
-    y = model.predict([question_vec,relation_vec])
-    results=decode_predictions2(y, top=1)
-    print('Predicted:', y)
+    y = model.predict([relation_vec,questions_vec])
+    tag,num=decode_predictions2(y, top=1)
+    print('Predicted tag=:')
+    print(tag.decode('string_escape'))
+    print('Predicted num=:')
+    print(num)
+    #print(result)
+    #print('Predicted:')
+    #for lines in result:
+    #   for line in lines:
+    #      print(str(line).decode('string_escape'))
     #结果
-    return results
-#加载模型
-# 加载模型结构
-#model = model_from_json(open('my_model_architecture.json').read())
+    return tag
 
-# 加载模型参数
-#model.load_weights('my_model_weight.h5')
 
-#predicated("ENTITY 创始人 哪位 ")
+
+predicated("ENTITY 创始人 哪位 ")
