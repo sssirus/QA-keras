@@ -1,6 +1,6 @@
 #coding=utf-8
 import os
-import re
+import io
 import numpy as np
 import globalvar as gl
 from keras.preprocessing.sequence import pad_sequences
@@ -23,18 +23,22 @@ def parse_dialog(QuesFile,RelaFile,LabelFile):
     question = []
     relation = []
     label = []
-    with open(QuesFile) as f1:
-        for ques in f1:
-            ques = ques.strip()
-            question.append(tokenize(ques))
-    with open(RelaFile) as f2:
-        for rela in f2:
-            rela = rela.strip()
-            relation.append(tokenize(rela))
-    with open(LabelFile) as f3:
-        for labe in f3:
-            labe = labe.strip()
-            label.append(labe)
+    f1 = io.open(QuesFile, 'r', encoding='UTF-8')
+
+    for ques in f1:
+        ques = ques.strip()
+        question.append(tokenize(ques))
+    f1.close()
+    f2 = io.open(RelaFile, 'r', encoding='UTF-8')
+    for rela in f2:
+        rela = rela.strip()
+        relation.append(tokenize(rela))
+    f2.close()
+    f3 = io.open(LabelFile, 'r', encoding='UTF-8')
+    for labe in f3:
+        labe = labe.strip()
+        label.append(labe)
+    f3.close()
 
     for i in range(0, len(label)):
         data.append((question[i],relation[i],label[i]))
@@ -99,8 +103,8 @@ def preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files
 # 然后根据得到的字典生成上文所定义的词向量矩阵
 def loadEmbeddingsIndex(path,filename):
     embeddings_index = {}
-    f = open(os.path.join(path, filename))
-    for line in f:
+    f = io.open(os.path.join(path, filename), 'r', encoding='UTF-8')
+    for line in islice(f, 1, None):
         values = line.split()
         word = values[0]
         coefs = np.asarray(values[1:], dtype='float32')

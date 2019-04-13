@@ -1,7 +1,7 @@
-#coding=utf-8
-
+#-*- coding: utf-8 -*-
+from imp import reload
 import numpy as np
-
+import io
 from keras.models import model_from_json
 
 import globalvar as gl
@@ -10,19 +10,23 @@ from keras.preprocessing.sequence import pad_sequences
 from loadModel import creatModel, creat_model_for_predicate
 
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 def decode_predictions2(preds, top=1):
     CLASS_INDEX = []
-    with open('./data/relation.txt')as f2:
-        for rela in f2:
-            rela = rela.strip()
-            CLASS_INDEX.append(rela)
 
+    f2 = io.open('./data/relation.txt', 'r', encoding='UTF-8')
+    for rela in f2:
+        rela = rela.strip()
+        CLASS_INDEX.append(rela)
+    f2.close()
 
-        top_indices = preds.argmax()
-        tag=CLASS_INDEX[top_indices]
-        num=preds[top_indices]
-        return tag,num
+    top_indices = preds.argmax()
+    tag=CLASS_INDEX[top_indices]
+    num=preds[top_indices]
+    return tag,num,top_indices
 
 
 
@@ -30,10 +34,11 @@ def decode_predictions2(preds, top=1):
 
 def parse_relation (RelaFile):
     relation = []
-    with open(RelaFile) as f2:
-        for rela in f2:
-            #print(rela)
-            relation.append(tokenize(rela.strip()))
+    f2 = io.open(RelaFile, 'r', encoding='UTF-8')
+    for rela in f2:
+        #print(rela)
+        relation.append(tokenize(rela.strip()))
+    f2.close()
     return relation
 
 
@@ -50,13 +55,13 @@ def predicated(inpute_question):
 
     NUM_OF_RELATIONS=708;
     gl.set_NUM_OF_RELATIONS(NUM_OF_RELATIONS)
-    RelaFile="./data/relation_fenci.txt"
+    RelaFile="./data/test.txt"
 
 
     #构造数据
-
-    print(inpute_question)
-    question = [tokenize(inpute_question)]
+    str2 = inpute_question.decode('utf-8', 'ignore')
+    print(str2)
+    question = [tokenize(str2)]
     #print(str(question).decode('string_escape'))
     relations = parse_relation(RelaFile)
     #print(str(relations).decode('string_escape'))
@@ -93,9 +98,9 @@ def predicated(inpute_question):
     print(str(question_vec).decode('string_escape'))
     print("relation_vec:")
     print(str(relation_vec).decode('string_escape'))
-    questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
+    #questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
     print("questions_vec")
-    print(np.array(questions_vec).shape)
+    print(np.array(question_vec).shape)
     print("relation_vec")
     print(np.array(relation_vec).shape)
 
@@ -120,12 +125,15 @@ def predicated(inpute_question):
             print (weight.name,weight.shape)
 
     #批量预测
-    y = model.predict([relation_vec,questions_vec])
-    tag,num=decode_predictions2(y, top=1)
+    y = model.predict([relation_vec,question_vec])
+
+    tag,num,index=decode_predictions2(y, top=1)
     print('Predicted tag=:')
     print(tag.decode('string_escape'))
     print('Predicted num=:')
     print(num)
+    print('Predicted index=:')
+    print(index)
     #print(result)
     #print('Predicted:')
     #for lines in result:
@@ -136,4 +144,4 @@ def predicated(inpute_question):
 
 
 
-predicated("ENTITY 创始人 哪位 ")
+predicated("创始人")
