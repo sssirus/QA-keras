@@ -21,10 +21,11 @@ def decode_predictions2(preds, top=1):
     for rela in f2:
         rela = rela.strip()
         CLASS_INDEX.append(rela)
+        print(rela.decode('string_escape'))
     f2.close()
 
     top_indices = preds.argmax()
-    tag=CLASS_INDEX[top_indices]
+    tag=CLASS_INDEX[top_indices+1]
     num=preds[top_indices]
     return tag,num,top_indices
 
@@ -55,7 +56,7 @@ def predicated(inpute_question):
 
     NUM_OF_RELATIONS=708;
     gl.set_NUM_OF_RELATIONS(NUM_OF_RELATIONS)
-    RelaFile="./data/test.txt"
+    RelaFile="./data/relation_fenci.txt"
 
 
     #构造数据
@@ -87,7 +88,7 @@ def predicated(inpute_question):
     print(lexicon_size)
     wd_idx = dict((wd, idx + 1) for idx, wd in enumerate(lexicon))
     #获取问题和关系最大长度
-    ques_maxlen= 7
+    ques_maxlen= 11
     rela_maxlen= 3
     gl.set_ques_maxlen(ques_maxlen)
     gl.set_relation_maxlen(rela_maxlen)
@@ -98,9 +99,9 @@ def predicated(inpute_question):
     print(str(question_vec).decode('string_escape'))
     print("relation_vec:")
     print(str(relation_vec).decode('string_escape'))
-    #questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
+    questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
     print("questions_vec")
-    print(np.array(question_vec).shape)
+    print(np.array(questions_vec).shape)
     print("relation_vec")
     print(np.array(relation_vec).shape)
 
@@ -125,8 +126,8 @@ def predicated(inpute_question):
             print (weight.name,weight.shape)
 
     #批量预测
-    y = model.predict([relation_vec,question_vec])
-
+    y = model.predict([relation_vec,questions_vec])
+    print(y)
     tag,num,index=decode_predictions2(y, top=1)
     print('Predicted tag=:')
     print(tag.decode('string_escape'))
