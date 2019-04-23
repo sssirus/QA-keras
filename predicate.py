@@ -46,8 +46,7 @@ def vectorize_dialog(data, wd_idx, maxlen ):
     return  pad_sequences(vec, maxlen = maxlen)
 
 def predicated(inpute_question):
-
-    NUM_OF_RELATIONS=708;
+    NUM_OF_RELATIONS=708
     gl.set_NUM_OF_RELATIONS(NUM_OF_RELATIONS)
     RelaFile="./data/test.txt"
 

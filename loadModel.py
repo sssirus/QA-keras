@@ -11,7 +11,7 @@ def creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen
 
 
     relation_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_length=relation_maxlen,
-                                         weights=[embedding_matrix], trainable=True,name="ques_embedding_layer")(tweet_relation)
+                                         weights=[embedding_matrix], trainable=False,name="ques_embedding_layer")(tweet_relation)
 
     lstm_relation = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_relation"), merge_mode='concat')(
         relation_embedding_layer)
@@ -19,7 +19,7 @@ def creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen
 
     # question
     question_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_length=ques_maxlen,
-                                         weights=[embedding_matrix], trainable=True,name="rela_embedding_layer")(tweet_ques)
+                                         weights=[embedding_matrix], trainable=False,name="rela_embedding_layer")(tweet_ques)
 
     lstm_question = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_quesiton"), merge_mode='concat')(
         question_embedding_layer)
@@ -67,7 +67,7 @@ def creat_model_for_predicate(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,
 
 
     relation_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_length=relation_maxlen,
-                                         weights=[embedding_matrix], trainable=True,name="predicate_ques_embedding_layer")(tweet_relation)
+                                         weights=[embedding_matrix], trainable=False,name="predicate_ques_embedding_layer")(tweet_relation)
 
     lstm_relation = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_relation"), merge_mode='concat')(
         relation_embedding_layer)
@@ -75,7 +75,7 @@ def creat_model_for_predicate(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,
 
     # question
     question_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_length=ques_maxlen,
-                                         weights=[embedding_matrix], trainable=True,name="predicate_rela_embedding_layer")(tweet_ques)
+                                         weights=[embedding_matrix], trainable=False,name="predicate_rela_embedding_layer")(tweet_ques)
 
     lstm_question = Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True,name="lstm_quesiton"), merge_mode='concat')(
         question_embedding_layer)
