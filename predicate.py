@@ -1,7 +1,7 @@
-#coding=utf-8
-
+#-*- coding: utf-8 -*-
+from imp import reload
 import numpy as np
-
+import io
 from keras.models import model_from_json
 
 import globalvar as gl
@@ -10,29 +10,36 @@ from keras.preprocessing.sequence import pad_sequences
 from loadModel import creatModel, creat_model_for_predicate
 
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
-def decode_predictions2(preds, top):
+def decode_predictions2(preds, top=1):
     CLASS_INDEX = []
-    with open('./data/relation.txt')as f2:
-        for rela in f2:
-            rela = rela.strip()
-            CLASS_INDEX.append(rela)
-    results = []
-    for pred in preds:
-        top_indices = pred.argsort()[-top:][::-1]
-        result = [tuple(CLASS_INDEX[i]) + (pred[i],) for i in top_indices]
-        result.sort(key=lambda x: x[2], reverse=True)
-        results.append(result)
-    return results
+
+    f2 = io.open('./data/relation.txt', 'r', encoding='UTF-8')
+    for rela in f2:
+        rela = rela.strip()
+        CLASS_INDEX.append(rela)
+        print(rela.decode('string_escape'))
+    f2.close()
+
+    top_indices = preds.argmax()
+    tag=CLASS_INDEX[top_indices+1]
+    num=preds[top_indices]
+    return tag,num,top_indices
+
+
 
 
 
 def parse_relation (RelaFile):
     relation = []
-    with open(RelaFile) as f2:
-        for rela in f2:
-            #print(rela)
-            relation.append(tokenize(rela.strip()))
+    f2 = io.open(RelaFile, 'r', encoding='UTF-8')
+    for rela in f2:
+        #print(rela)
+        relation.append(tokenize(rela.strip()))
+    f2.close()
     return relation
 
 
@@ -48,13 +55,13 @@ def vectorize_dialog(data, wd_idx, maxlen ):
 def predicated(inpute_question):
     NUM_OF_RELATIONS=708
     gl.set_NUM_OF_RELATIONS(NUM_OF_RELATIONS)
-    RelaFile="./data/test.txt"
+    RelaFile="./data/relation_fenci.txt"
 
 
     #构造数据
-
-    print(inpute_question)
-    question = [tokenize(inpute_question)]
+    str2 = inpute_question.decode('utf-8', 'ignore')
+    print(str2)
+    question = [tokenize(str2)]
     #print(str(question).decode('string_escape'))
     relations = parse_relation(RelaFile)
     #print(str(relations).decode('string_escape'))
@@ -80,7 +87,7 @@ def predicated(inpute_question):
     print(lexicon_size)
     wd_idx = dict((wd, idx + 1) for idx, wd in enumerate(lexicon))
     #获取问题和关系最大长度
-    ques_maxlen= 7
+    ques_maxlen= 11
     rela_maxlen= 3
     gl.set_ques_maxlen(ques_maxlen)
     gl.set_relation_maxlen(rela_maxlen)
@@ -91,9 +98,9 @@ def predicated(inpute_question):
     print(str(question_vec).decode('string_escape'))
     print("relation_vec:")
     print(str(relation_vec).decode('string_escape'))
-    #questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
+    questions_vec=np.tile(question_vec,(NUM_OF_RELATIONS,1))
     print("questions_vec")
-    print(np.array(question_vec).shape)
+    print(np.array(questions_vec).shape)
     print("relation_vec")
     print(np.array(relation_vec).shape)
 
@@ -102,35 +109,39 @@ def predicated(inpute_question):
     gl.set_EMBEDDING_DIM(EMBEDDING_DIM)
     embedding_index = loadEmbeddingsIndex("/data/zjy/", "TencentPreTrain.txt")
     embedding_matrix = generateWord2VectorMatrix(embedding_index, wd_idx)
-    #改变矩阵形状
-    #embedding_matrix_re = np.resize(embedding_matrix,(1611, 200))
+
     # 加载模型
-    NUM_FILTERS=150
+    NUM_FILTERS=128
     LSTM_DIM =150
     gl.set_LSTM_DIM(LSTM_DIM)
     model=creat_model_for_predicate(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,rela_maxlen,NUM_FILTERS,LSTM_DIM,0.01)
 
     model.load_weights(filepath='my_model_weights.h5', by_name=True)
-    #predicate_rela_embedding_layer=model.get_layer(name="predicate_rela_embedding_layer")
-    #predicate_rela_embedding_layer.set_weights([embedding_matrix])
-    #predicate_ques_embedding_layer = model.get_layer(name="predicate_ques_embedding_layer")
-    #predicate_ques_embedding_layer.set_weights([embedding_matrix])
+
+
     print("查看模型")
     for layer in model.layers:
         for weight in layer.weights:
             print (weight.name,weight.shape)
 
     #批量预测
-    y = model.predict([question_vec,relation_vec])
-    results=decode_predictions2(y, top=1)
-    print('Predicted:', y)
+    y = model.predict([relation_vec,questions_vec])
+    print(y)
+    tag,num,index=decode_predictions2(y, top=1)
+    print('Predicted tag=:')
+    print(tag.decode('string_escape'))
+    print('Predicted num=:')
+    print(num)
+    print('Predicted index=:')
+    print(index)
+    #print(result)
+    #print('Predicted:')
+    #for lines in result:
+    #   for line in lines:
+    #      print(str(line).decode('string_escape'))
     #结果
-    return results
-#加载模型
-# 加载模型结构
-#model = model_from_json(open('my_model_architecture.json').read())
+    return tag
 
-# 加载模型参数
-#model.load_weights('my_model_weight.h5')
 
-#predicated("ENTITY 创始人 哪位 ")
+
+predicated("创始人")
