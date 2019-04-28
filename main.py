@@ -1,12 +1,16 @@
 # coding=utf-8
+from imp import reload
+
 from keras import Input, Model
 import numpy as np
 import globalvar as gl
-from data_preprocessor import preprocess,generateWord2VectorMatrix,loadEmbeddingsIndex
+from data_preprocessor import preprocess, generateWord2VectorMatrix, loadEmbeddingsIndex, preprocess_all_words
 from loadModel import creatModel
 #全局变量
 
-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 gl.set_train_rela_files("train_case_rela.txt")
 gl.set_train_ques_file("train_case_ques.txt")
@@ -14,8 +18,8 @@ gl.set_train_label_file("train_case_label.txt")
 gl.set_test_rela_files("test_case_rela.txt")
 gl.set_test_ques_file("test_case_ques.txt")
 gl.set_test_label_file("test_case_label.txt")
-gl.set_preprocessWordVector_files("TencentPreTrain.txt")
-gl.set_preprocessWordVector_path("/data/zjy/")
+gl.set_preprocessWordVector_files("Tencent_AILab_ChineseEmbedding.txt")
+gl.set_preprocessWordVector_path("/data1/ylx/")
 gl.set_MAX_NB_WORDS(50)
 gl.set_EMBEDDING_DIM(200)
 gl.set_LSTM_DIM(150)
@@ -40,7 +44,7 @@ filter_sizes = gl.get_filter_sizes()
 
 
 #预处理
-ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file)
+ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess_all_words(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file,preprocessWordVector_path,preprocessWordVector_files)
 embedding_index=loadEmbeddingsIndex(preprocessWordVector_path,preprocessWordVector_files)
 embedding_matrix=generateWord2VectorMatrix(embedding_index,wd_idx)
 print("ques_train")
