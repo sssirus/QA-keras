@@ -1,10 +1,10 @@
 # coding=utf-8
 from keras import Input, Model
-from keras.layers import Embedding, Dropout, LSTM, Bidirectional, concatenate, Conv1D, MaxPooling1D, Flatten, Dense, merge
+from keras.layers import Embedding, Dropout, LSTM, Bidirectional, concatenate, Conv1D, MaxPooling1D, Flatten, Dense
 from attention import attention_3d_block
 
 
-def creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM,DROPOUT_RATE = 0.01):
+def creatCNNModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM,DROPOUT_RATE = 0.01):
     tweet_relation = Input(shape=(relation_maxlen,))
     tweet_ques = Input(shape=(ques_maxlen,))
 
@@ -49,8 +49,8 @@ def creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen
     pool3 = MaxPooling1D(ques_maxlen + relation_maxlen - 5 + 1, name="cnn_3_maxpool")(conv3)  # max-pooling
     pool3 = Flatten()(pool3)
     convs.append(pool3)
-
-    merged_vector = merge(convs, mode='concat')  # good
+    merged_vector = concatenate(convs)
+    #merged_vector = merge(convs, mode='concat')  # good
     dense_1 = Dense(NUM_FILTERS, activation='relu', name="dense_1")(merged_vector)
     dense_2 = Dense(NUM_FILTERS, activation='relu', name="dense_2")(dense_1)
     dense_3 = Dense(NUM_FILTERS, activation='relu', name="dense_3")(dense_2)

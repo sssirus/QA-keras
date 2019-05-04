@@ -5,12 +5,9 @@ from keras import Input, Model
 import numpy as np
 import globalvar as gl
 from data_preprocessor import preprocess, generateWord2VectorMatrix, loadEmbeddingsIndex, preprocess_all_words
-from loadModel import creatModel
+from loadModel import creatCNNModel
 #全局变量
 
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 gl.set_train_rela_files("train_case_rela.txt")
 gl.set_train_ques_file("train_case_ques.txt")
@@ -47,6 +44,7 @@ filter_sizes = gl.get_filter_sizes()
 ques_train, rela_train,label_train, ques_test, rela_test, label_test,wd_idx=preprocess_all_words(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file,preprocessWordVector_path,preprocessWordVector_files)
 embedding_index=loadEmbeddingsIndex(preprocessWordVector_path,preprocessWordVector_files)
 embedding_matrix=generateWord2VectorMatrix(embedding_index,wd_idx)
+#embedding_matrix=loadEmbeddingsIndex2(preprocessWordVector_path,preprocessWordVector_files,wd_idx)
 print("ques_train")
 print(np.array(ques_train).shape)
 print("rela_train")
@@ -63,23 +61,23 @@ print(np.array(label_test).shape)
 relation_maxlen= gl.get_relation_maxlen()
 ques_maxlen= gl.get_ques_maxlen()
 
-model=creatModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM,0.01)
-model.compile(optimizer='adam',
+CNNmodel=creatCNNModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM,0.01)
+CNNmodel.compile(optimizer='adam',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-model.fit([rela_train,ques_train], label_train, nb_epoch=10,batch_size=20,verbose=1,shuffle=True)
-json_string = model.to_json()  # json_string = model.get_config()
+CNNmodel.fit(x=[rela_train,ques_train], y=label_train, nb_epoch=10,batch_size=20,verbose=1,shuffle=True)
+json_string = CNNmodel.to_json()  # json_string = model.get_config()
 open('my_model_architecture.json','w').write(json_string)
-model.save_weights('my_model_weights.h5')
+CNNmodel.save_weights('my_model_weights.h5')
 
-score = model.evaluate([rela_train,ques_train], label_train, verbose=0)
+score = CNNmodel.evaluate([rela_train,ques_train], label_train, verbose=0)
 print('train score:', score[0])
 print('train accuracy:', score[1])
-score = model.evaluate([rela_test, ques_test], label_test, verbose=0)
+score = CNNmodel.evaluate([rela_test, ques_test], label_test, verbose=0)
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
-a = model.predict([rela_test,ques_test])
+a = CNNmodel.predict([rela_test,ques_test])
 
 print('Predicted:')
 for lines in a:

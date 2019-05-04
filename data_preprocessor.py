@@ -4,6 +4,8 @@ import io
 from imp import reload
 
 import numpy as np
+import tqdm as tqdm
+
 import globalvar as gl
 from keras.preprocessing.sequence import pad_sequences
 from itertools import islice
@@ -15,6 +17,15 @@ MAX_NB_WORDS = gl.get_MAX_NB_WORDS()
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
+#判断string是否能转换为float
+import re
+def is_number(num):
+    pattern = re.compile(r'^[-+]?[-0-9]\d*\.\d*|[-+]?\.?[0-9]\d*$')
+    result = pattern.match(num)
+    if result:
+        return True
+    else:
+        return False
 
 #将每个单词分割来
 def tokenize(data):
@@ -104,7 +115,18 @@ def preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files
     # 对训练集和测试集，进行word2vec
     question_train, relation_train, label_train = vectorize_dialog(train_data, wd_idx, rela_maxlen, ques_maxlen)
     question_test, relation_test, label_test = vectorize_dialog(test_data, wd_idx, rela_maxlen, ques_maxlen)
-
+    print("train_ques after preprocessing...")
+    print(np.array(question_train).shape)
+    print("train_rela after preprocessing...")
+    print(np.array(relation_train).shape)
+    print("train_label after preprocessing...")
+    print(np.array(label_train).shape)
+    print("test_ques after preprocessing...")
+    print(np.array(question_test).shape)
+    print("test_rela after preprocessing...")
+    print(np.array(relation_test).shape)
+    print("test_label after preprocessing...")
+    print(np.array(label_test).shape)
     return question_train, relation_train,label_train, question_test, relation_test, label_test,wd_idx
 def preprocess_all_words(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file,preprocessWordVector_path,preprocessWordVector_files):
     # 准备数据
@@ -121,7 +143,12 @@ def preprocess_all_words(train_rela_files,train_ques_file,train_label_file,test_
     f = io.open(os.path.join(preprocessWordVector_path, preprocessWordVector_files), 'r', encoding='UTF-8')
     for line in islice(f, 1, None):
         values = line.split()
-        word = values[0]
+
+        try:
+            coefs = np.asarray(values[1:], dtype='float32')
+            word = values[0]
+        except:
+            continue
         #coefs = np.asarray(values[1:], dtype='float32')
         temp.append(word)
     f.close()
@@ -152,15 +179,36 @@ def preprocess_all_words(train_rela_files,train_ques_file,train_label_file,test_
 
 #从Tecent AI Lab文件中解析出每个词和它所对应的词向量，并用字典的方式存储。
 # 然后根据得到的字典生成上文所定义的词向量矩阵
+def  loadEmbeddingsIndex2(path,file,wd_idx):
+    EMBEDDING_DIM = gl.get_EMBEDDING_DIM()
+    print("Loading pre-trained word embeddings from %s " % file)
+
+    with open(os.path.join(path, file), "r", encoding='UTF-8') as f:
+        header = f.readline()
+        vocab_size, vector_size = map(int, header.split())
+        embedding_matrix = np.zeros((len(wd_idx) + 1, EMBEDDING_DIM))
+        for i in tqdm(range(vocab_size)):
+            line = f.readline()
+            lists = line.split(' ')
+            word = lists[0]
+            if word in wd_idx:
+                number = map(float, lists[1:])
+                number = list(number)
+                vector = np.array(number)
+                embedding_matrix[wd_idx[word]] = vector
+
+    return embedding_matrix
 def loadEmbeddingsIndex(path,filename):
     embeddings_index = {}
     f = io.open(os.path.join(path, filename), 'r', encoding='UTF-8')
     for line in islice(f, 1, None):
         values = line.split()
         word = values[0]
-        
-        coefs = np.asarray(values[1:], dtype='float32')
-        embeddings_index[word] = coefs
+        try:
+            coefs = np.asarray(values[1:], dtype='float32')
+            embeddings_index[word] = coefs
+        except:
+            continue
     f.close()
 
     print('找到 %s 个词向量。' % len(embeddings_index))
