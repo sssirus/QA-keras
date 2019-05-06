@@ -1,9 +1,13 @@
 #-*- coding: utf-8 -*-
+
+
+import os
+os.environ['KERAS_BACKEND'] = 'tensorflow'
+import keras.backend as K
+K.set_image_dim_ordering('tf')
 from imp import reload
 import numpy as np
 import io
-
-import os
 import time
 import globalvar as gl
 from data_preprocessor import tokenize, loadEmbeddingsIndex, generateWord2VectorMatrix
@@ -14,6 +18,9 @@ from itertools import islice
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
+
+
+
 
 def decode_predictions2(CLASS_INDEX,preds, top=1):
 
@@ -247,7 +254,7 @@ def predicated_quick(CLASS_INDEX,inpute_question,wd_idx,model,relation_vec):
     print("questions_vec")
     print(np.array(questions_vec).shape)
 
-    y = model.predict([relation_vec, questions_vec])
+    y = model.predict([relation_vec, questions_vec],batch_size=NUM_OF_RELATIONS)
     #print(y)
     tag, num, index = decode_predictions2(CLASS_INDEX,y, top=1)
     print('Predicted tag=:')
