@@ -1,7 +1,10 @@
 # coding=utf-8
 from imp import reload
 
-from keras import Input, Model
+import os
+os.environ['KERAS_BACKEND'] = 'tensorflow'
+import keras.backend as K
+K.set_image_dim_ordering('tf')
 import numpy as np
 import globalvar as gl
 from data_preprocessor import preprocess, generateWord2VectorMatrix, loadEmbeddingsIndex, preprocess_all_words
@@ -15,7 +18,7 @@ gl.set_train_label_file("train_case_label.txt")
 gl.set_test_rela_files("test_case_rela.txt")
 gl.set_test_ques_file("test_case_ques.txt")
 gl.set_test_label_file("test_case_label.txt")
-gl.set_preprocessWordVector_files("Tencent_AILab_ChineseEmbedding.txt")
+gl.set_preprocessWordVector_files("reducedW2V.txt")
 gl.set_preprocessWordVector_path("/data1/ylx/")
 gl.set_MAX_NB_WORDS(50)
 gl.set_EMBEDDING_DIM(200)

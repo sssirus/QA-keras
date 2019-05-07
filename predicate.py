@@ -57,7 +57,8 @@ def vectorize_dialog(data, wd_idx, maxlen ):
 #向量化,返回对应词表的索引号
     vec = []
     for line in data:
-        idx = [wd_idx[w] for w in line]
+        idx = [wd_idx[w] for w in line ]
+
         vec.append(idx)
     #序列长度归一化，分别找出对话，问题和答案的最长长度，然后相对应的对数据进行padding。
     return  pad_sequences(vec, maxlen = maxlen)
@@ -214,12 +215,6 @@ def loadCNNModelFromFile(wd_idx,embedding_matrix,ques_maxlen,rela_maxlen):
 
     model.load_weights(filepath='my_model_weights.h5', by_name=True)
 
-    print("查看模型")
-    for layer in model.layers:
-        for weight in layer.weights:
-            print(weight.name, weight.shape)
-
-    # 批量预测
 
     return model
 def predicated_quick(CLASS_INDEX,inpute_question,wd_idx,model,relation_vec):
@@ -254,7 +249,7 @@ def predicated_quick(CLASS_INDEX,inpute_question,wd_idx,model,relation_vec):
     print("questions_vec")
     print(np.array(questions_vec).shape)
 
-    y = model.predict([relation_vec, questions_vec],batch_size=NUM_OF_RELATIONS)
+    y = model.predict([relation_vec, questions_vec],batch_size=10000)
     #print(y)
     tag, num, index = decode_predictions2(CLASS_INDEX,y, top=1)
     print('Predicted tag=:')
@@ -273,7 +268,7 @@ def predicated_quick(CLASS_INDEX,inpute_question,wd_idx,model,relation_vec):
 
 ques_maxlen=9
 rela_maxlen=3
-preprocessWordVector_files="Tencent_AILab_ChineseEmbedding.txt"
+preprocessWordVector_files="reducedW2V.txt"
 preprocessWordVector_path="/data1/ylx/"
 CLASS_INDEX=load_CLASS_INDEX()
 relation_vec,wd_idx,embedding_matrix=prepareWork(preprocessWordVector_path,preprocessWordVector_files)
