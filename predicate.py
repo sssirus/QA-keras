@@ -28,7 +28,7 @@ class CNNpredict:
     LSTM_DIM = 150
     RelaFile = "./data/relation_fenci.txt"
     preprocessWordVector_files = "reducedW2V.txt"
-    preprocessWordVector_path = "/data1/ylx/"
+    preprocessWordVector_path = "/data/ylx/"
     CLASS_INDEX= None
     relation_vec= None
     wd_idx=None
