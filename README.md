@@ -1,5 +1,6 @@
 # QA-kera
 **此项目基于python2.7,keras2.1.2,cuda 8**
+
 该项目实现了中文问答系统，该模型大体借鉴了《*An Attention-Based Word-Level Interaction Model:Relation Detection for Knowledge Base Question Answering*》提出的模型。采用Tensorflow 后台的 Keras 实现。
 
 - main.py 是程序的入口，用于训练模型
