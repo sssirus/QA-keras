@@ -10,3 +10,8 @@
 - predicate：采用训练好的模型进行预测
 - cnn，lstm_cnn, attention_lstm_cnn：几种不同的模型进行对比
 
+用法如下：
+
+1. 训练模型：main.py
+2. 用模型预测：predict_anwser.py
+3. 启动flask服务：flask_keras.py
