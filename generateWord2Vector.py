@@ -65,24 +65,24 @@ def loadWord(preprocessWordVector_path,preprocessWordVector_files):
     print("词表总共单词数：")
     print(i)
     return
+
+
+
 def selectHighFrequencyWord(preprocessWordVector_path,preprocessWordVector_files):
     # 建立词表。词表就是文本中所有出现过的单词组成的词表。
     temp = []
 
     f = io.open(os.path.join(preprocessWordVector_path, preprocessWordVector_files), 'r', encoding='UTF-8')
-    i=0
+
     for line in f:
         values = line.split()
-        if(i<1000000):
-            word = values[0]
+        word = values[0]
+        frequency = values[1]
+        if(frequency>2000):
             temp.append(word)
-            i=i+1
-        else:
-            break
     f.close()
 
     return temp
-
 
 def selectSimilarWord(preprocessWordVector_path,preprocessWordVector_files):
 
