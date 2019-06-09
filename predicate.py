@@ -19,7 +19,18 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-
+import heapq
+def topK_heapq(num_list,k):
+    array = []
+    for i in range(len(num_list)):
+        if len(array) < k:
+            heapq.heappush(array, num_list[i])
+        else:
+            array_min = array[0]
+            if num_list[i] > array_min:
+                heapq.heapreplace(array, num_list[i])
+    topK=array
+    return topK
 class CNNpredict:
     ques_maxlen=9
     rela_maxlen=3
@@ -78,7 +89,7 @@ class CNNpredict:
 
         y = self.model.predict([self.relation_vec, questions_vec], batch_size=10000)
         # print(y)
-        tag, num, index = self.decode_predictions2( y, top=1)
+        tag, num = self.decode_predictions2( y, top=3)
         # print('Predicted tag=:')
         # print(tag.decode('string_escape'))
         # print('Predicted num=:')
@@ -152,11 +163,15 @@ class CNNpredict:
         embedding_index = loadEmbeddingsIndex(self.preprocessWordVector_path, self.preprocessWordVector_files)
         embedding_matrix = generateWord2VectorMatrix(embedding_index, wd_idx)
         return relation_vec, wd_idx, embedding_matrix
-    def decode_predictions2(self,preds, top=1):
-        top_indices = preds.argmax()
-        tag=self.CLASS_INDEX[top_indices]
-        num=preds[top_indices]
-        return tag,num,top_indices
+    def decode_predictions2(self,preds, top):
+        #top_indices = preds.argmax()
+        tag=[]
+        num=[]
+        top_indices =topK_heapq(preds,top)
+        for i in top_indices:
+            tag.append(self.CLASS_INDEX[i])
+            num.append(preds[i])
+        return tag,num
 
     def load_CLASS_INDEX(self):
         CLASS_INDEX = []
@@ -185,8 +200,12 @@ class CNNpredict:
     #向量化,返回对应词表的索引号
         vec = []
         for line in data:
-            idx = [(wd_idx)[w] for w in line ]
-
+            idx = []
+            for w in line:
+                if w in wd_idx:
+                    idx.append(wd_idx[w])
+                else:
+                    idx.append(0)
             vec.append(idx)
         #序列长度归一化，分别找出对话，问题和答案的最长长度，然后相对应的对数据进行padding。
         return  pad_sequences(vec, maxlen = maxlen)

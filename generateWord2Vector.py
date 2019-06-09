@@ -75,10 +75,10 @@ def selectHighFrequencyWord(preprocessWordVector_path,preprocessWordVector_files
     f = io.open(os.path.join(preprocessWordVector_path, preprocessWordVector_files), 'r', encoding='UTF-8')
 
     for line in f:
-        values = line.split()
+        values = line.split("\t")
         word = values[0]
         frequency = values[1]
-        if(frequency>2000):
+        if(frequency>0):
             temp.append(word)
     f.close()
 
@@ -111,9 +111,9 @@ train_label_file="train_case_label.txt"
 test_rela_files="test_case_rela.txt"
 test_ques_file="test_case_ques.txt"
 test_label_file="test_case_label.txt"
-preprocessWordVector_path="/data1/ylx/"
+preprocessWordVector_path="/data/ylx/"
 preprocessWordVector_files="Tencent_AILab_ChineseEmbedding.txt"
-chineseWordFile="ChinesWordwithFrequecy.txt"
+chineseWordFile="HighFrequencyWords.txt"
 temp=selectHighFrequencyWord(preprocessWordVector_path,chineseWordFile)
 words=loadDatasetWord(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file)
 words+=temp

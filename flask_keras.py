@@ -16,9 +16,10 @@ def predict():
 
         quesionToken = str.join(question_list)
         print(quesionToken)
-        tag = model.predicated_quick(quesionToken)
-        print(tag)
-        my_dict = {"entity": "", "predicate": tag}
+        tags = model.predicated_quick(quesionToken)
+        for tag in tags:
+            print(tag)
+        my_dict = {"entity": "", "predicate": tags}
     # 返回响应
     return jsonify(my_dict)
 
