@@ -10,7 +10,7 @@ def predict():
 
     # 若发现参数，则返回预测值
     if (params != None):
-        str = " ";
+        str = " "
         print(params)
         question_list = jieba.cut(params)
 
@@ -26,5 +26,5 @@ def predict():
 
 # 當啟動 server 時先去預先 load model 每次 request 都要重新 load 造成效率低下且資源浪費
 if __name__ == '__main__':
-     app.run(debug=False, host='0.0.0.0', port=6006)
+     app.run(debug=False, host='0.0.0.0', port=6008)
 

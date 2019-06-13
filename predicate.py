@@ -20,17 +20,16 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 import heapq
-def topK_heapq(num_list,k):
-    array = []
-    for i in range(len(num_list)):
-        if len(array) < k:
-            heapq.heappush(array, num_list[i])
-        else:
-            array_min = array[0]
-            if num_list[i] > array_min:
-                heapq.heapreplace(array, num_list[i])
-    topK=array
-    return topK
+def getListMaxNumIndex(num_list,topk=3):
+    '''
+    获取列表中最大的前n个数值的位置索引
+    '''
+    num_list=num_list.tolist()
+    max_num_index=map(num_list.index, heapq.nlargest(topk,num_list))
+    #min_num_index=map(num_list.index, heapq.nsmallest(topk,num_list))
+    #print 'max_num_index:',max_num_index
+    #print 'min_num_index:',min_num_index
+    return  max_num_index
 class CNNpredict:
     ques_maxlen=9
     rela_maxlen=3
@@ -167,7 +166,7 @@ class CNNpredict:
         #top_indices = preds.argmax()
         tag=[]
         num=[]
-        top_indices =topK_heapq(preds,top)
+        top_indices =getListMaxNumIndex(preds,top)
         for i in top_indices:
             tag.append(self.CLASS_INDEX[i])
             num.append(preds[i])
