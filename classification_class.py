@@ -7,11 +7,11 @@ from keras.preprocessing.sequence import pad_sequences
 
 
 import globalvar as gl
-from classification_model import test_cnn
+from model.classification_model import test_cnn
 
 
 #全局变量
-from data_preprocessor import tokenize, loadEmbeddingsIndex, generateWord2VectorMatrix
+from preprocess.data_preprocessor import tokenize, loadEmbeddingsIndex, generateWord2VectorMatrix
 
 gl.set_train_rela_files("train_case_rela_fenlei_label.txt")
 gl.set_train_ques_file("train_case_ques_fenlei.txt")

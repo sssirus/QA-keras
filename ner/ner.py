@@ -74,4 +74,3 @@ def ltp():
     postagger.release()  # 释放模型
     recognizer.release()
     return
-def standfordCoreNLP:

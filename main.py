@@ -1,5 +1,4 @@
 # coding=utf-8
-from imp import reload
 
 import os
 os.environ['KERAS_BACKEND'] = 'tensorflow'
@@ -7,8 +6,8 @@ import keras.backend as K
 K.set_image_dim_ordering('tf')
 import numpy as np
 import globalvar as gl
-from data_preprocessor import preprocess, generateWord2VectorMatrix, loadEmbeddingsIndex, preprocess_all_words
-from loadModel import creatCNNModel
+from preprocess.data_preprocessor import generateWord2VectorMatrix, loadEmbeddingsIndex, preprocess_all_words
+from model.loadModel import creatCNNModel
 #全局变量
 
 

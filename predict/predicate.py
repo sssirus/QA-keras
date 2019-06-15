@@ -10,9 +10,9 @@ import numpy as np
 import io
 
 import globalvar as gl
-from data_preprocessor import tokenize, loadEmbeddingsIndex, generateWord2VectorMatrix
+from preprocess.data_preprocessor import tokenize, loadEmbeddingsIndex, generateWord2VectorMatrix
 from keras.preprocessing.sequence import pad_sequences
-from loadModel import creatCNNModel, creat_model_for_predicate
+from model.loadModel import creatCNNModel
 from itertools import islice
 
 import sys

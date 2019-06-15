@@ -1,12 +1,10 @@
 # coding=utf-8
 from keras import Input, Model
-import numpy as np
-from keras.layers import Embedding, Conv1D, Dropout, MaxPooling1D, Flatten, merge, Dense, LSTM, regularizers, \
-    Bidirectional
+from keras.layers import Embedding, Conv1D, Dropout, MaxPooling1D, Flatten, merge, Dense
 
 import globalvar as gl
-from data_preprocessor import preprocess,generateWord2VectorMatrix,loadEmbeddingsIndex
-from loadModel import creatModel
+from preprocess.data_preprocessor import preprocess,generateWord2VectorMatrix,loadEmbeddingsIndex
+
 #全局变量
 
 
@@ -55,22 +53,15 @@ ques_maxlen= gl.get_ques_maxlen()
 tweet_relation = Input(shape=(relation_maxlen,))
 tweet_ques = Input(shape=(ques_maxlen,))
 
-DROPOUT_RATE=0.1
-
 
 
 relation_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_length=relation_maxlen, weights=[embedding_matrix], trainable=True)(tweet_relation)
 
-
-lstm_relation=Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(relation_embedding_layer)
-lstm_relation = Dropout(DROPOUT_RATE)(lstm_relation)
-
-
-relation_conv1 = Conv1D(128, 3, activation='tanh')(lstm_relation)
-relation_drop_1 = Dropout(DROPOUT_RATE)(relation_conv1)
+relation_conv1 = Conv1D(128, 3, activation='tanh')(relation_embedding_layer)
+relation_drop_1 = Dropout(0.2)(relation_conv1)
 relation_max_1 = MaxPooling1D(relation_maxlen-3+1)(relation_drop_1)
 relation_conv2 = Conv1D(128, 1, activation='tanh')(relation_max_1)
-relation_drop_2 = Dropout(DROPOUT_RATE)(relation_conv2)
+relation_drop_2 = Dropout(0.2)(relation_conv2)
 relation_dmax_2 = MaxPooling1D(1)(relation_drop_2)
 #conv2 = Conv1D(128, 3, activation='tanh')(max_1)
 #max_2 = MaxPooling1D(3)(conv2)
@@ -79,15 +70,11 @@ relation_out_1 = Flatten()(relation_dmax_2)
 #question
 question_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_length=ques_maxlen, weights=[embedding_matrix], trainable=True)(tweet_ques)
 
-lstm_question=Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(question_embedding_layer)
-lstm_question = Dropout(DROPOUT_RATE)(lstm_question)
-
-
-question_conv1 = Conv1D(128, 3, activation='tanh')(lstm_question)
-question_drop_1 = Dropout(DROPOUT_RATE)(question_conv1)
+question_conv1 = Conv1D(128, 3, activation='tanh')(question_embedding_layer)
+question_drop_1 = Dropout(0.2)(question_conv1)
 question_max_1 = MaxPooling1D(ques_maxlen-3+1)(question_drop_1)
 question_conv2 = Conv1D(128, 1, activation='tanh')(question_max_1)
-question_drop_2 = Dropout(DROPOUT_RATE)(question_conv2)
+question_drop_2 = Dropout(0.2)(question_conv2)
 question_dmax_2 = MaxPooling1D(1)(question_drop_2)
 #conv2 = Conv1D(128, 3, activation='tanh')(max_1)
 #max_2 = MaxPooling1D(3)(conv2)
@@ -108,7 +95,7 @@ model.compile(optimizer='rmsprop',
               loss='binary_crossentropy',
               metrics=['accuracy'])
 
-model.fit([rela_train,ques_train], label_train, nb_epoch=10,batch_size=20,verbose=1,shuffle=True)
+model.fit([rela_train,ques_train], label_train, nb_epoch=20,batch_size=5,verbose=1,shuffle=True)
 json_string = model.to_json()  # json_string = model.get_config()
 open('my_model_architecture.json','w').write(json_string)
 model.save_weights('my_model_weights.h5')

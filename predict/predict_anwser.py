@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-from predicate import model
+from predict.predicate import model
 import time
 
 inpute_question = "创始人 是 谁"

@@ -1,7 +1,7 @@
 # coding=utf-8
 from keras import Input, Model
 from keras.layers import Embedding, Dropout, LSTM, Bidirectional, concatenate, Conv1D, MaxPooling1D, Flatten, Dense
-from attention import attention_3d_block
+from model.attention import attention_3d_block
 
 
 def creatCNNModel(EMBEDDING_DIM,wd_idx,embedding_matrix,ques_maxlen,relation_maxlen,NUM_FILTERS,LSTM_DIM,DROPOUT_RATE = 0.01):

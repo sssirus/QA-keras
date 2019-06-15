@@ -1,13 +1,10 @@
 # coding=utf-8
 from keras import Input, Model
-import numpy as np
-from keras.layers import Embedding, Conv1D, Dropout, MaxPooling1D, Flatten, merge, Dense, LSTM, regularizers, \
-    Bidirectional, concatenate
+from keras.layers import Embedding, Conv1D, Dropout, MaxPooling1D, Flatten, merge, Dense, LSTM, Bidirectional
 
 import globalvar as gl
-from attention import attention_3d_block
-from data_preprocessor import preprocess,generateWord2VectorMatrix,loadEmbeddingsIndex
-from loadModel import creatModel
+from preprocess.data_preprocessor import preprocess,generateWord2VectorMatrix,loadEmbeddingsIndex
+
 #全局变量
 
 
@@ -36,7 +33,7 @@ MAX_NB_WORDS=gl.get_MAX_NB_WORDS()
 EMBEDDING_DIM=gl.get_EMBEDDING_DIM()
 LSTM_DIM=gl.get_LSTM_DIM()
 
-gl.set_NUM_FILTERS(128)
+gl.set_NUM_FILTERS(150)
 gl.set_filter_sizes([1,3,5])
 
 NUM_FILTERS = gl.get_NUM_FILTERS()
@@ -56,7 +53,7 @@ ques_maxlen= gl.get_ques_maxlen()
 tweet_relation = Input(shape=(relation_maxlen,))
 tweet_ques = Input(shape=(ques_maxlen,))
 
-DROPOUT_RATE=0.01
+DROPOUT_RATE=0.1
 
 
 
@@ -66,42 +63,40 @@ relation_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_lengt
 lstm_relation=Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(relation_embedding_layer)
 lstm_relation = Dropout(DROPOUT_RATE)(lstm_relation)
 
+
+relation_conv1 = Conv1D(128, 3, activation='tanh')(lstm_relation)
+relation_drop_1 = Dropout(DROPOUT_RATE)(relation_conv1)
+relation_max_1 = MaxPooling1D(relation_maxlen-3+1)(relation_drop_1)
+relation_conv2 = Conv1D(128, 1, activation='tanh')(relation_max_1)
+relation_drop_2 = Dropout(DROPOUT_RATE)(relation_conv2)
+relation_dmax_2 = MaxPooling1D(1)(relation_drop_2)
+#conv2 = Conv1D(128, 3, activation='tanh')(max_1)
+#max_2 = MaxPooling1D(3)(conv2)
+relation_out_1 = Flatten()(relation_dmax_2)
+#out_1 = LSTM(128)(max_1)
 #question
 question_embedding_layer = Embedding(len(wd_idx) + 1, EMBEDDING_DIM, input_length=ques_maxlen, weights=[embedding_matrix], trainable=True)(tweet_ques)
 
 lstm_question=Bidirectional(LSTM(LSTM_DIM, activation='tanh', return_sequences=True),merge_mode='concat')(question_embedding_layer)
 lstm_question = Dropout(DROPOUT_RATE)(lstm_question)
 
-# Attention层
-print("---------------")
-l_att = attention_3d_block(lstm_relation, lstm_question)
-# Attention层的拼接
-merge_layer = concatenate([lstm_question, l_att], axis=1)
+
+question_conv1 = Conv1D(128, 3, activation='tanh')(lstm_question)
+question_drop_1 = Dropout(DROPOUT_RATE)(question_conv1)
+question_max_1 = MaxPooling1D(ques_maxlen-3+1)(question_drop_1)
+question_conv2 = Conv1D(128, 1, activation='tanh')(question_max_1)
+question_drop_2 = Dropout(DROPOUT_RATE)(question_conv2)
+question_dmax_2 = MaxPooling1D(1)(question_drop_2)
+#conv2 = Conv1D(128, 3, activation='tanh')(max_1)
+#max_2 = MaxPooling1D(3)(conv2)
+question_out_1 = Flatten()(question_dmax_2)
+#out_1 = LSTM(128)(max_1)
 
 
-# CNN层
-convs = []
-# for fsz in filter_sizes:
-## 1
-conv1 = Conv1D(NUM_FILTERS, kernel_size=1, activation='tanh', name="cnn_1_conv")(merge_layer)
-pool1 = MaxPooling1D(ques_maxlen + relation_maxlen - 1 + 1, name="cnn_1_maxpool")(conv1)  # max-pooling
-pool1 = Flatten()(pool1)
-convs.append(pool1)
-## 3
-conv2 = Conv1D(NUM_FILTERS, kernel_size=3, activation='tanh', name="cnn_2_conv")(merge_layer)
-pool2 = MaxPooling1D(ques_maxlen + relation_maxlen - 3 + 1, name="cnn_2_maxpool")(conv2)  # max-pooling
-pool2 = Flatten()(pool2)
-convs.append(pool2)
-## 5
-conv3 = Conv1D(NUM_FILTERS, kernel_size=5, activation='tanh', name="cnn_3_conv")(merge_layer)
-pool3 = MaxPooling1D(ques_maxlen + relation_maxlen - 5 + 1, name="cnn_3_maxpool")(conv3)  # max-pooling
-pool3 = Flatten()(pool3)
-convs.append(pool3)
-
-merged_vector = merge(convs, mode='concat') # good
-dense_1 = Dense(NUM_FILTERS,activation='relu')(merged_vector)
-dense_2 = Dense(NUM_FILTERS,activation='relu')(dense_1)
-dense_3 = Dense(NUM_FILTERS,activation='relu')(dense_2)
+merged_vector = merge([relation_out_1, question_out_1], mode='concat') # good
+dense_1 = Dense(128,activation='relu')(merged_vector)
+dense_2 = Dense(128,activation='relu')(dense_1)
+dense_3 = Dense(128,activation='relu')(dense_2)
 
 predictions = Dense(1, activation='sigmoid')(dense_3)
 #predictions = Dense(len(labels_index), activation='softmax')(merged_vector)
@@ -122,9 +117,9 @@ print('train accuracy:', score[1])
 score = model.evaluate([rela_test, ques_test], label_test, verbose=0)
 print('Test score:', score[0])
 print('Test accuracy:', score[1])
-#a = model.predict([rela_test,ques_test])
+a = model.predict([rela_test,ques_test])
 
-#print('Predicted:')
-#for lines in a:
-#    for line in lines:
-#        print(line)
+print('Predicted:')
+for lines in a:
+    for line in lines:
+        print(line)

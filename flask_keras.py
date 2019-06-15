@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-from predicate import model
+from predict.predicate import model
 from flask import Flask,jsonify,request
 import jieba
 

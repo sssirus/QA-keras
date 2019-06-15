@@ -5,7 +5,7 @@ import os
 
 from itertools import islice
 
-from data_preprocessor import parse_dialog
+from preprocess.data_preprocessor import parse_dialog
 
 
 def is_chinese(uchar):
