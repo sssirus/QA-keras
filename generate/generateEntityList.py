@@ -80,7 +80,7 @@ def findAddictionalEntity(path,dict_file,entity_file):
             #print(line)
             continue
         if word not in dict:
-            fa.write(word + " " + "20000"+" "+"n")
+            fa.write(word + " " + "20000"+" "+"n"+"\n")
             i=i+1
             #print(word)
     fe.close()
