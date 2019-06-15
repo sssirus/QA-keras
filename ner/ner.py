@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
+import io
 from imp import reload
 import jieba
 reload(sys)
@@ -74,3 +75,52 @@ def ltp():
     postagger.release()  # 释放模型
     recognizer.release()
     return
+class NER:
+    dict={}
+    entity_files = "entities.txt"
+    entity_url_file="entitiesURL.txt"
+    path = "/data/ylx/ylx/data/"
+    def __init__(self):
+        f = io.open(os.path.join(self.path, self.entity_url_file), 'r',
+                    encoding='UTF-8')
+        for line in f:
+            try:
+                values = line.split(' ')
+                word = values[0]
+                url = values[1]
+
+
+            except:
+                print(line)
+                continue
+            self.dict[word] = url
+        f.close()
+        jieba.set_dictionary(os.path.join(self.path, "dict.txt"))
+        print("词典加载完成")
+        #jieba.load_userdict(os.path.join(self.path, self.entity_files))  # file_name 为文件类对象或自定义词典的路径
+        self.dictBasedNER("小红帽特工队的续作是？")
+    def dictBasedNER(self,question):
+        str = "|"
+        res = []
+        res_words=None
+        question_cut = jieba.cut(question)
+        print("分词结果")
+        quesionToken = str.join(res)
+        print(quesionToken.decode('string_escape'))
+        question_cut_list = list(question_cut)
+        for word in question_cut_list:
+            if word in self.dict:
+                print("实体：")
+                print(word)
+                res_words = word
+            else:
+                res.append(word)
+
+        # quesionToken = str.join(question_cut)
+        # print(quesionToken)
+        print("删掉实体以后")
+        quesionToken = str.join(res)
+        print(quesionToken)
+        return res_words,self.dict[res_words],quesionToken
+
+ner = NER()
