@@ -95,7 +95,7 @@ class NER:
                 continue
             self.dict[word] = url
         f.close()
-        jieba.set_dictionary(os.path.join(self.path, "dict.txt"))
+        jieba.set_dictionary(os.path.join(self.path, "newdict.txt"))
         print("词典加载完成")
         #jieba.load_userdict(os.path.join(self.path, self.entity_files))  # file_name 为文件类对象或自定义词典的路径
         self.dictBasedNER("小红帽特工队的续作是？")
