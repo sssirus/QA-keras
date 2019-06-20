@@ -55,21 +55,25 @@ def generateEntityAndURL(path,filename):
 def findAddictionalEntity(path,dict_file,entity_file):
     # 将原生分词词典中没有的实体找到,和原词典一起生成新词典
     dict={}
-
+    fn = io.open(os.path.join(path, "newdict.txt"), 'w',
+                 encoding='UTF-8')
     f = io.open(os.path.join(path, dict_file), 'r',
                 encoding='UTF-8')
     for line in f:
 
         try:
-            values = line.split(' ',1)
+            values = line.split(' ')
             word = values[0]
-            other = values[1]
+            frequency = values[1]
+            wordpropoty=values[2]
 
             #print(word)
         except:
+            print("==============error in dict.txt:===============")
             print(line)
             continue
-        dict[word] = other
+        dict[word] = 1
+        fn.write(line)
     f.close()
 
     fe = io.open(os.path.join(path, entity_file), 'r',
@@ -80,26 +84,82 @@ def findAddictionalEntity(path,dict_file,entity_file):
         #print(line)
         try:
 
-            values = line.split(' ',1)
+            values = line.split(' ')
             word = values[0]
-            other = values[1]
+            frequency = values[1]
+            wordpropoty=values[2]
             #print(line)
         except:
-            #print(line)
+            print("==============error in entity.txt:===============")
+            print(line)
             continue
         if word not in dict :
-            dict[word] = other
+
             i=i+1
+            fn.write(line)
             #print(word)
     fe.close()
+
+
+    fn.close()
+    print("总共新增词数目：")
+    print(i)
+    return
+def generateNewDictFromEntityURL(path,dict_file,entity_file):
+    # 将原生分词词典中没有的实体找到,和原词典一起生成新词典
+    dict = {}
     fn = io.open(os.path.join(path, "newdict.txt"), 'w',
                  encoding='UTF-8')
-    for e in dict:
-        fn.write(e + " " + dict[e])
+    f = io.open(os.path.join(path, dict_file), 'r',
+                encoding='UTF-8')
+    for line in f:
+
+        try:
+            values = line.split(' ')
+            word = values[0]
+            frequency = values[1]
+            wordpropoty = values[2]
+
+            # print(word)
+        except:
+            print("==============error in dict.txt:===============")
+            print(line)
+            continue
+        dict[word] = 1
+        fn.write(line)
+    f.close()
+
+    fe = io.open(os.path.join(path, entity_file), 'r',
+                 encoding='UTF-8')
+
+    i = 0
+    for line in fe:
+        # print(line)
+        try:
+
+            values = line.split(' ')
+            word = values[0]
+            url = values[1]
+            #wordpropoty = values[2]
+            # print(line)
+        except:
+            print("==============error in entity_row.txt:===============")
+            print(line)
+            continue
+        if word not in dict:
+            i = i + 1
+
+            # print(value+" "+line)
+            newstr = word + " " + "20000" + " " + "n" + "\n"
+            fn.write(newstr)
+            # print(word)
+    fe.close()
+
     fn.close()
     print("总共新增词数目：")
     print(i)
     return
 #generateEntity(r"/data/ylx","zhishime_all_entities.txt")
 #generateEntityAndURL(r"/data/ylx","zhishime_all_entities.txt")
-findAddictionalEntity(r"/data/ylx/ylx/data/","dict.txt","entities.txt")
+#findAddictionalEntity(r"/data/ylx/ylx/data/","dict.txt","entities.txt")
+generateNewDictFromEntityURL(r"/data/ylx/ylx/data/","dict.txt","entities_row.txt")

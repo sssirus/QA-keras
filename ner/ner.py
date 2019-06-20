@@ -76,11 +76,12 @@ def ltp():
     recognizer.release()
     return
 class NER:
-    dict={}
-    entity_files = "entities.txt"
-    entity_url_file="entitiesURL.txt"
+    dict=None
+    #entity_files = "entities.txt"
+    entity_url_file="entities_row.txt"
     path = "/data/ylx/ylx/data/"
     def __init__(self):
+        self.dict={}
         f = io.open(os.path.join(self.path, self.entity_url_file), 'r',
                     encoding='UTF-8')
         for line in f:
@@ -88,7 +89,8 @@ class NER:
                 values = line.split(' ')
                 word = values[0]
                 url = values[1]
-
+                rm = "\n"
+                url = url.rstrip(rm)
 
             except:
                 print(line)
@@ -100,18 +102,27 @@ class NER:
         #jieba.load_userdict(os.path.join(self.path, self.entity_files))  # file_name 为文件类对象或自定义词典的路径
         self.dictBasedNER("小红帽特工队的续作是？")
     def dictBasedNER(self,question):
-        str = "|"
+        str = " "
         res = []
         res_words=None
         question_cut = jieba.cut(question)
         print("分词结果")
-        quesionToken = str.join(res)
-        print(quesionToken.decode('string_escape'))
+
         question_cut_list = list(question_cut)
+        quesionToken = str.join(question_cut_list)
+        print(quesionToken)
+        #temp="小红帽特工队"
+        #print(temp)
+        #print(temp in self.dict.keys())
+        #print(self.dict[temp].decode('utf-8'))
         for word in question_cut_list:
-            if word in self.dict:
+
+            if word in self.dict.keys():
                 print("实体：")
                 print(word)
+                #print("url：")
+                #print(self.dict[word])
+                #print("===================")
                 res_words = word
             else:
                 res.append(word)
