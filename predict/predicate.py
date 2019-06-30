@@ -153,7 +153,7 @@ class CNNpredict:
         #      print(str(line).decode('string_escape'))
         # 结果
         print(tag)
-        return tag
+        return tag,y
     def loadCNNModelFromFile(self):
         # 加载模型
 

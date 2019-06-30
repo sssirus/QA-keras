@@ -90,48 +90,52 @@ class NER:
         #jieba.load_userdict(os.path.join(self.path, self.entity_files))  # file_name 为文件类对象或自定义词典的路径
         self.dictBasedNER("小红帽特工队的续作是？")
 
-        def ltp(str2):
-            LTP_DATA_DIR = '/data/ylx/ltp_data_v3.4.0/'  # ltp模型目录的路径
+    def ltp(self,str2):
+        LTP_DATA_DIR = '/data/ylx/ltp_data_v3.4.0/'  # ltp模型目录的路径
 
-            # 词性标注
+        # 词性标注
 
-            pos_model_path = os.path.join(LTP_DATA_DIR, 'pos.model')  # 词性标注模型路径，模型名称为`pos.model`
-            postagger = Postagger()  # 初始化实例
-            postagger.load(pos_model_path)  # 加载模型
+        pos_model_path = os.path.join(LTP_DATA_DIR, 'pos.model')  # 词性标注模型路径，模型名称为`pos.model`
+        postagger = Postagger()  # 初始化实例
+        postagger.load(pos_model_path)  # 加载模型
 
-            # words = ['元芳', '你', '怎么', '看']  # 分词结果
-            postags = postagger.postag(str2)  # 词性标注
+        print(str2)
+        words=[x.decode('string_escape') for x in str2]
+        # words = ['元芳', '你', '怎么', '看']  # 分词结果
+        postags = postagger.postag(words)  # 词性标注
 
-            print('\t'.join(postags))
-            # ner
-            ner_model_path = os.path.join(LTP_DATA_DIR, 'ner.model')  # 命名实体识别模型路径，模型名称为`pos.model`
-            recognizer = NamedEntityRecognizer()  # 初始化实例
-            recognizer.load(ner_model_path)  # 加载模型
+        print('\t'.join(postags))
+        # ner
+        ner_model_path = os.path.join(LTP_DATA_DIR, 'ner.model')  # 命名实体识别模型路径，模型名称为`pos.model`
+        recognizer = NamedEntityRecognizer()  # 初始化实例
+        recognizer.load(ner_model_path)  # 加载模型
 
-            netags = recognizer.recognize(str2, postags)  # 命名实体识别
-            netags_list = list(netags)  # 命名实体识别)  # 命名实体识别
-            print('\t'.join(netags))
-            res = ''
-            remain=[]
-            for i in netags_list:
-                index = netags_list.index(i)
-                if i.startswith('S'):
-                    res = str2[index]
-                    break;
-                elif i.startswith('B'):
-                    res = str2[index]
-                elif i.startswith('I'):
-                    res += str2[index]
-                elif i.startswith('E'):
-                    res += str2[index]
-                elif i.startswith('O'):
-                    remain.append(str2[index])
+        netags = recognizer.recognize(words, postags)  # 命名实体识别
+        netags_list = list(netags)  # 命名实体识别)  # 命名实体识别
+        print('\t'.join(netags))
+        res = ''
+        remain=[]
 
 
-            print(res.decode('string_escape'))
-            postagger.release()  # 释放模型
-            recognizer.release()
-            return res,remain
+        for index in range(len(netags_list)):
+            if netags_list[index].startswith('S'):
+                res = str2[index]
+                break;
+            elif netags_list[index].startswith('B'):
+                res = str2[index]
+            elif netags_list[index].startswith('I'):
+                res += str2[index]
+            elif netags_list[index].startswith('E'):
+                res += str2[index]
+            elif netags_list[index].startswith('O'):
+                remain.append(str2[index])
+        if res == '':
+            res = str2[0]
+            remain.pop(0)
+        print(res.decode('string_escape'))
+        postagger.release()  # 释放模型
+        recognizer.release()
+        return res,remain
     def dictBasedNER(self,question):
         str = " "
         res = []
