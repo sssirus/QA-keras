@@ -62,7 +62,7 @@ class CNNpredict:
 
     def predicated_quick(self, inpute_question):
 
-
+        print(inpute_question)
 
         # 构造数据
         str2 = inpute_question.decode('utf-8', 'ignore')
@@ -85,7 +85,8 @@ class CNNpredict:
         questions_vec = np.tile(question_vec, (self.NUM_OF_RELATIONS, 1))
         print("questions_vec")
         print(np.array(questions_vec).shape)
-
+        print("relation_vec")
+        print(np.array(self.relation_vec).shape)
         y = self.model.predict([self.relation_vec, questions_vec], batch_size=10000)
         # print(y)
         tag, num = self.decode_predictions2( y, top=3)
@@ -101,8 +102,58 @@ class CNNpredict:
         #   for line in lines:
         #      print(str(line).decode('string_escape'))
         # 结果
+        print (tag)
         return tag
+    def predict_from_predicate(self, inpute_question,cadidateStr):
 
+        print(inpute_question)
+        print("候选谓词：")
+        print(cadidateStr)
+
+        # 构造数据
+        str1 = inpute_question.decode('utf-8', 'ignore')
+        str2 = cadidateStr.decode('utf-8', 'ignore')
+        # print(str2)
+        question = [tokenize(str1)]
+        number_of_candidate=len(tokenize(str2.strip()))
+        candidate = tokenize(str2.strip())
+        # print(str(question).decode('string_escape'))
+
+        # print(str(relations).decode('string_escape'))
+        # f = open('relation.txt', 'w')  # 若是'wb'就表示写二进制文件
+        # f.write(str(relations))
+        # f.close()
+        # f = open('question.txt', 'w')  # 若是'wb'就表示写二进制文件
+        # f.write(str(question))
+        # f.close()
+
+        # 获取问题和关系最大长度
+
+        # 对训练集和测试集，进行word2vec
+        question_vec = self.vectorize_dialog(self.wd_idx,question, self.ques_maxlen)
+        candidate_vec = self.vectorize_dialog(self.wd_idx, candidate, self.rela_maxlen)
+        questions_vec = np.tile(question_vec, (number_of_candidate, 1))
+        print("questions_vec")
+        print(np.array(questions_vec).shape)
+        print("candidate_vec")
+        print(np.array(candidate_vec).shape)
+        y = self.model.predict([candidate_vec, questions_vec], batch_size=10000)
+        print(y)
+        tag, num = self.decode_predictions_from_candidate(y,candidate)
+        # print('Predicted tag=:')
+        # print(tag.decode('string_escape'))
+        # print('Predicted num=:')
+        # print(num)
+        # print('Predicted index=:')
+        # print(index)
+        # print(result)
+        # print('Predicted:')
+        # for lines in result:
+        #   for line in lines:
+        #      print(str(line).decode('string_escape'))
+        # 结果
+        print(tag)
+        return tag
     def loadCNNModelFromFile(self):
         # 加载模型
 
@@ -162,6 +213,18 @@ class CNNpredict:
         embedding_index = loadEmbeddingsIndex(self.preprocessWordVector_path, self.preprocessWordVector_files)
         embedding_matrix = generateWord2VectorMatrix(embedding_index, wd_idx)
         return relation_vec, wd_idx, embedding_matrix
+    def decode_predictions1(self,preds):
+        top_indices = preds.argmax()
+        tag=self.CLASS_INDEX[top_indices]
+        num=preds[top_indices]
+        return tag,num
+    def decode_predictions_from_candidate(self,preds,candidate_list):
+        top_indices = preds.argmax()
+        print("top_indices")
+        print(top_indices)
+        tag=candidate_list[top_indices]
+        num=preds[top_indices]
+        return tag,num
     def decode_predictions2(self,preds, top):
         #top_indices = preds.argmax()
         tag=[]
