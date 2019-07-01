@@ -66,7 +66,7 @@ def ltp():
 class NER:
     dict=None
     #entity_files = "entities.txt"
-    entity_url_file="entities_row.txt"
+    entity_url_file="entities_url.txt"
     path = "/data/ylx/ylx/data/"
     def __init__(self):
         self.dict={}
@@ -114,9 +114,6 @@ class NER:
         netags_list = list(netags)  # 命名实体识别)  # 命名实体识别
         print('\t'.join(netags))
         res = ''
-        remain=[]
-
-
         for index in range(len(netags_list)):
             if netags_list[index].startswith('S'):
                 res = str2[index]
@@ -127,19 +124,19 @@ class NER:
                 res += str2[index]
             elif netags_list[index].startswith('E'):
                 res += str2[index]
-            elif netags_list[index].startswith('O'):
-                remain.append(str2[index])
+
         if res == '':
             res = str2[0]
-            remain.pop(0)
+
         print(res.decode('string_escape'))
         postagger.release()  # 释放模型
         recognizer.release()
-        return res,remain
+        return res
     def dictBasedNER(self,question):
         str = " "
         res = []
-        res_words=None
+        res_words=[]
+        url=[]
         isfound=False
         question_cut = jieba.cut(question)
         print("分词结果")
@@ -151,30 +148,40 @@ class NER:
         #print(temp)
         #print(temp in self.dict.keys())
         #print(self.dict[temp].decode('utf-8'))
-        for word in question_cut_list:
 
+        for word in question_cut_list:
             if word in self.dict.keys():
                 print("实体：")
                 print(word)
                 #print("url：")
                 #print(self.dict[word])
                 #print("===================")
-                res_words = word
+                res_words .append(word)
+                url.append(self.dict[word])
+
                 isfound=True
-            else:
-                res.append(word)
+
+
+
         if(isfound==False):
 
-            res_words,res = self.ltp(question_cut_list)
-        # quesionToken = str.join(question_cut)
-        # print(quesionToken)
-        print("删掉实体以后")
-        quesionToken = str.join(res)
-        print(quesionToken)
-        if res_words in self.dict.keys():
+            res_words_item = self.ltp(question_cut_list)
+            res_words.append(res_words_item)
+            #res.append(str.join(res_item))
+            url.append("None")
 
-            return res_words,self.dict[res_words],quesionToken
-        else:
-            return res_words, "None", quesionToken
+        for x in res_words:
+
+            removed = question_cut_list[:]
+            removed.remove(x)
+            res.append(str.join(removed))
+        print("找到的实体：")
+        for x in res_words:
+            print(x)
+        print("剩余部分:")
+        for x in res:
+            print(x.decode('string_escape'))
+        return res_words,url,res
+
 ner = NER()
 #ltp()

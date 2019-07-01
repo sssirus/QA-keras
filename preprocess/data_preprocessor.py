@@ -35,23 +35,22 @@ def tokenize(data):
 
 # parse_dialog 将所有的对话进行解析，返回tokenize后的句子
 # 如果 only_supporting为真表明只返回含有答案的对话
-def parse_dialog(QuesFile,RelaFile,LabelFile):
+def parse_dialog(path,QuesFile,RelaFile,LabelFile):
     data = []
     question = []
     relation = []
     label = []
-    f1 = io.open(QuesFile, 'r', encoding='UTF-8')
-
+    f1 = io.open(os.path.join(path, QuesFile), 'r', encoding='UTF-8')
     for ques in f1:
         ques = ques.strip()
         question.append(tokenize(ques))
     f1.close()
-    f2 = io.open(RelaFile, 'r', encoding='UTF-8')
+    f2 = io.open(os.path.join(path, RelaFile), 'r', encoding='UTF-8')
     for rela in f2:
         rela = rela.strip()
         relation.append(tokenize(rela))
     f2.close()
-    f3 = io.open(LabelFile, 'r', encoding='UTF-8')
+    f3 = io.open(os.path.join(path, LabelFile), 'r', encoding='UTF-8')
     for labe in f3:
         labe = labe.strip()
         label.append(labe)
@@ -81,11 +80,11 @@ def vectorize_dialog(data,wd_idx, rela_maxlen, ques_maxlen):
     return pad_sequences(ques_vec, maxlen = ques_maxlen),\
         pad_sequences(rela_vec, maxlen = rela_maxlen),label
 
-def preprocess(train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file):
+def preprocess(path,train_rela_files,train_ques_file,train_label_file,test_rela_files,test_ques_file,test_label_file):
     # 准备数据
 
-    train_data = parse_dialog(train_ques_file,train_rela_files,train_label_file)
-    test_data = parse_dialog(test_ques_file, test_rela_files, test_label_file)
+    train_data = parse_dialog(path,train_ques_file,train_rela_files,train_label_file)
+    test_data = parse_dialog(path,test_ques_file, test_rela_files, test_label_file)
     print("train_data")
     print(np.array(train_data).shape)
     print("test_data")

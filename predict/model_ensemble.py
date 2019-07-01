@@ -25,8 +25,8 @@ def emsemble(question, candidate):
     y=np.asarray(y1)
     tag, num = decode_predictions_from_candidate(y, candidates)
 
-    return tag
+    return tag,num
 inpute_question = "是 什么 年代 的？"
 candidate = "分类 登录 类目 时代 简介 所在"
-tag=emsemble(inpute_question,candidate)
+tag,num=emsemble(inpute_question,candidate)
 print(tag.decode('string_escape'))

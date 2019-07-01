@@ -1,4 +1,5 @@
 # coding: utf-8
+import re
 import urllib
 import sys
 
@@ -159,7 +160,72 @@ def generateNewDictFromEntityURL(path,dict_file,entity_file):
     print("总共新增词数目：")
     print(i)
     return
+def generateNewDictFromEntity(path,dict_file,entity_file):
+    # 将原生分词词典中没有的实体找到,和原词典一起生成新词典
+    dict = {}
+    fu = io.open(os.path.join(path, "entities_url.txt"), 'w',
+                 encoding='UTF-8')
+    fn = io.open(os.path.join(path, "newdict.txt"), 'w',
+                 encoding='UTF-8')
+    f = io.open(os.path.join(path, dict_file), 'r',
+                encoding='UTF-8')
+    for line in f:
+
+        try:
+            values = line.split(' ')
+            word = values[0]
+            frequency = values[1]
+            wordpropoty = values[2]
+
+            # print(word)
+        except:
+            print("==============error in dict.txt:===============")
+            print(line)
+            continue
+        dict[word] = 1
+        fn.write(line)
+    f.close()
+
+    fe = io.open(os.path.join(path, entity_file), 'r',
+                 encoding='UTF-8')
+
+    i = 0
+    for line in fe:
+        # print(line)
+        try:
+            rm = "\n"
+            value = line.rstrip(rm)
+            value = value.replace(" ", "");
+
+            word = RemoveSpacesAndPunctuation(value)
+            #url = values[1]
+            #wordpropoty = values[2]
+            # print(line)
+        except:
+            print("==============error in all_entities.txt:===============")
+            print(line)
+            continue
+        if word not in dict and word.strip()!="":
+            i = i + 1
+            newstr_url=word+" "+"http://zhishi.me/baidubaike/resource/"+line
+            fu.write(newstr_url)
+            # print(value+" "+line)
+            newstr = word + " " + "20000" + " " + "nz" + "\n"
+            fn.write(newstr)
+            # print(word)
+    fe.close()
+    fu.close()
+    fn.close()
+    print("总共新增词数目：")
+    print(i)
+    return
+def RemoveSpacesAndPunctuation(str):
+    r = '[’!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~]+'
+    str = str.strip()
+    str = re.sub(r, '', str)
+    return str
 #generateEntity(r"/data/ylx","zhishime_all_entities.txt")
 #generateEntityAndURL(r"/data/ylx","zhishime_all_entities.txt")
 #findAddictionalEntity(r"/data/ylx/ylx/data/","dict.txt","entities.txt")
-generateNewDictFromEntityURL(r"/data/ylx/ylx/data/","dict.txt","entities_row.txt")
+#generateNewDictFromEntityURL(r"/data/ylx/ylx/data/","dict.txt","entities_row.txt")
+generateNewDictFromEntity(r"/data/ylx/ylx/data/","dict.txt","all_entities.txt")

@@ -14,7 +14,7 @@ from preprocess.data_preprocessor import tokenize, loadEmbeddingsIndex, generate
 from keras.preprocessing.sequence import pad_sequences
 from model.loadModel import creatCNNModel
 from itertools import islice
-
+import jieba
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -38,7 +38,8 @@ class CNNpredict:
     LSTM_DIM = 150
     RelaFile = "./data/relation_fenci.txt"
     preprocessWordVector_files = "reducedW2V.txt"
-    preprocessWordVector_path = "/data/ylx/"
+    preprocessWordVector_path = "/data/ylx/ylx/data/"
+    model_path = "/data/ylx/ylx/data/"
     CLASS_INDEX= None
     relation_vec= None
     wd_idx=None
@@ -115,8 +116,12 @@ class CNNpredict:
         str2 = cadidateStr.decode('utf-8', 'ignore')
         # print(str2)
         question = [tokenize(str1)]
-        number_of_candidate=len(tokenize(str2.strip()))
         candidate = tokenize(str2.strip())
+        number_of_candidate = len(candidate)
+        candidates = []
+        for x in candidate:
+            candidates.append(jieba.cut(x))
+
         # print(str(question).decode('string_escape'))
 
         # print(str(relations).decode('string_escape'))
@@ -131,7 +136,7 @@ class CNNpredict:
 
         # 对训练集和测试集，进行word2vec
         question_vec = self.vectorize_dialog(self.wd_idx,question, self.ques_maxlen)
-        candidate_vec = self.vectorize_dialog(self.wd_idx, candidate, self.rela_maxlen)
+        candidate_vec = self.vectorize_dialog(self.wd_idx, candidates, self.rela_maxlen)
         questions_vec = np.tile(question_vec, (number_of_candidate, 1))
         print("questions_vec")
         print(np.array(questions_vec).shape)
@@ -161,7 +166,7 @@ class CNNpredict:
         model = creatCNNModel(self.EMBEDDING_DIM, self.wd_idx, self.embedding_matrix, self.ques_maxlen, self.rela_maxlen, self.NUM_FILTERS, self.LSTM_DIM,
                               0.01)
 
-        model.load_weights(filepath='my_model_weights.h5', by_name=True)
+        model.load_weights(filepath=os.path.join(self.model_path, 'my_model_weights.h5'), by_name=True)
 
         return model
 
