@@ -10,6 +10,7 @@ sys.setdefaultencoding('utf8')
 from pyltp import Postagger
 from pyltp import NamedEntityRecognizer
 from pyltp import Segmentor
+
 def ltp():
     LTP_DATA_DIR = '/data/ylx/ltp_data_v3.4.0/'  # ltp模型目录的路径
     #分词
@@ -134,7 +135,7 @@ class NER:
         return res
     def dictBasedNER(self,question):
         str = " "
-        res = []
+        remain = []
         res_words=[]
         url=[]
         isfound=False
@@ -150,6 +151,7 @@ class NER:
         #print(self.dict[temp].decode('utf-8'))
 
         for word in question_cut_list:
+
             if word in self.dict.keys():
                 print("实体：")
                 print(word)
@@ -163,6 +165,7 @@ class NER:
 
 
 
+
         if(isfound==False):
 
             res_words_item = self.ltp(question_cut_list)
@@ -170,18 +173,22 @@ class NER:
             #res.append(str.join(res_item))
             url.append("None")
 
-        for x in res_words:
 
-            removed = question_cut_list[:]
-            removed.remove(x)
-            res.append(str.join(removed))
+        for entity in res_words:
+            temp_remain = []
+            for word in question_cut_list:
+                if word is not entity:
+                    temp_remain.append(word)
+            remain.append(str.join(temp_remain))
+
+
         print("找到的实体：")
         for x in res_words:
             print(x)
         print("剩余部分:")
-        for x in res:
+        for x in remain:
             print(x.decode('string_escape'))
-        return res_words,url,res
+        return res_words,url,remain
 
 ner = NER()
 #ltp()
