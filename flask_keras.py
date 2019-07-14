@@ -23,7 +23,7 @@ def predict():
         #print(quesionToken)
         tags,score = emsemble(params1,params2)
         print(tags)
-        my_dict = { "predicate": tags,"score":score}
+        my_dict = { "predicate": tags,"score":int(score[0])}
     # 返回响应
     return jsonify(my_dict)
 @app.route('/entity', methods=["POST"])
