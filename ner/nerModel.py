@@ -67,7 +67,7 @@ def ltp():
 class NER:
     dict=None
     #entity_files = "entities.txt"
-    entity_url_file="entities_url.txt"
+    entity_url_file="entities_row.txt"
     path = "/data/ylx/ylx/data/"
     def __init__(self):
         self.dict={}
@@ -88,7 +88,7 @@ class NER:
         f.close()
         jieba.set_dictionary(os.path.join(self.path, "newdict.txt"))
         print("词典加载完成")
-        #jieba.load_userdict(os.path.join(self.path, self.entity_files))  # file_name 为文件类对象或自定义词典的路径
+        #jieba.load_userdict(os.path.join(self.path,"newdict.txt"))  # file_name 为文件类对象或自定义词典的路径
         self.dictBasedNER("小红帽特工队的续作是？")
 
     def ltp(self,str2):

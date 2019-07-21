@@ -227,5 +227,5 @@ def RemoveSpacesAndPunctuation(str):
 #generateEntity(r"/data/ylx","zhishime_all_entities.txt")
 #generateEntityAndURL(r"/data/ylx","zhishime_all_entities.txt")
 #findAddictionalEntity(r"/data/ylx/ylx/data/","dict.txt","entities.txt")
-#generateNewDictFromEntityURL(r"/data/ylx/ylx/data/","dict.txt","entities_row.txt")
-generateNewDictFromEntity(r"/data/ylx/ylx/data/","dict.txt","all_entities.txt")
+generateNewDictFromEntityURL(r"/data/ylx/ylx/data/","dict.txt","entities_row.txt")
+#generateNewDictFromEntity(r"/data/ylx/ylx/data/","dict.txt","all_entities.txt")
