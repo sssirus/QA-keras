@@ -6,7 +6,7 @@ from imp import reload
 import jieba
 reload(sys)
 sys.setdefaultencoding('utf8')
-
+import datetime,time
 from pyltp import Postagger
 from pyltp import NamedEntityRecognizer
 from pyltp import Segmentor
@@ -67,7 +67,7 @@ def ltp():
 class NER:
     dict=None
     #entity_files = "entities.txt"
-    entity_url_file="entities_row.txt"
+    entity_url_file="entities_url.txt"
     path = "/data/ylx/ylx/data/"
     def __init__(self):
         self.dict={}
@@ -84,7 +84,7 @@ class NER:
             except:
                 print(line)
                 continue
-            self.dict[word] = url
+            self.dict[word] = 1
         f.close()
         jieba.set_dictionary(os.path.join(self.path, "newdict.txt"))
         print("词典加载完成")
@@ -139,17 +139,23 @@ class NER:
         res_words=[]
         url=[]
         isfound=False
+        starttime = datetime.datetime.now()
         question_cut = jieba.cut(question)
+
         print("分词结果")
 
         question_cut_list = list(question_cut)
         quesionToken = str.join(question_cut_list)
         print(quesionToken)
+
+        endtime = datetime.datetime.now()
+
+        print("分词时间：" + (endtime - starttime).seconds)
         #temp="小红帽特工队"
         #print(temp)
         #print(temp in self.dict.keys())
         #print(self.dict[temp].decode('utf-8'))
-
+        starttime = datetime.datetime.now()
         for word in question_cut_list:
 
             if word in self.dict.keys():
@@ -159,12 +165,15 @@ class NER:
                 #print(self.dict[word])
                 #print("===================")
                 res_words .append(word)
-                url.append(self.dict[word])
-
+                #url.append(self.dict[word])
+                url.append("None")
                 isfound=True
 
 
 
+        endtime = datetime.datetime.now()
+
+        print("查找哪个词时实体时间：" + (endtime - starttime).seconds)
 
         if(isfound==False):
 
@@ -173,7 +182,7 @@ class NER:
             #res.append(str.join(res_item))
             url.append("None")
 
-
+        starttime = datetime.datetime.now()
         for entity in res_words:
             temp_remain = []
             for word in question_cut_list:
@@ -181,6 +190,10 @@ class NER:
                     temp_remain.append(word)
             remain.append(str.join(temp_remain))
 
+
+        endtime = datetime.datetime.now()
+
+        print("生成剩余部分时间：" + (endtime - starttime).seconds)
 
         print("找到的实体：")
         for x in res_words:
